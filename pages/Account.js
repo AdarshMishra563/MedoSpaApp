@@ -244,7 +244,7 @@ const settingsList = [
               <NewIcon name={item.icon} size={24} />
               <Text style={styles.settingsLabel}>{item.name}</Text>
             </View>
-            <NewIcon name="chevron-right" size={24} />
+            <NewIcon  name="chevron-right" size={24} />
           </TouchableOpacity>
         ))}
       </View>
@@ -310,6 +310,8 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderBottomWidth: 1,
     borderColor: '#eee',
+    paddingLeft:4,
+    paddingRight:2
   },
   settingsLeft: {
     flexDirection: 'row',

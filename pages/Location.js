@@ -111,7 +111,7 @@ const shouldAutoSaveLocation = async (newLocation, newAddress) => {
         const { latitude, longitude } = position.coords;
         try {
           const res = await Geocoder.from(latitude, longitude);
-          console.log(res)
+          
           const addr = res.results[0]?.formatted_address;
           setLocation({ latitude, longitude });
           setAddress(addr);

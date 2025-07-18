@@ -98,7 +98,7 @@ const hasDispatched = useRef(false);
               setTimeout(() => {
                 setShowModal(false);
                 console.log('Modal hidden.');
-              }, 3000);
+              }, 1500);
             } else {
               console.log('User has not moved > 100 meters. No update.');
             }
