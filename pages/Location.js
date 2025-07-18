@@ -378,7 +378,7 @@ const handlePrdictionClick = async (input) => {
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
     position: 'relative',
-    paddingRight: 40 // Space for options icon
+    paddingRight: 40 
   }}
 >
  
@@ -444,7 +444,7 @@ const handlePrdictionClick = async (input) => {
     )}
   </View>
 
-  {/* Options button */}
+ 
   <TouchableOpacity 
     onPress={() => setSelectedLocationId(loc._id === selectedLocationId ? null : loc._id)}
     style={{
@@ -457,7 +457,7 @@ const handlePrdictionClick = async (input) => {
     <Icon name="more-vert" size={20} color="#777" />
   </TouchableOpacity>
   
-  {/* Options dropdown */}
+  
   {selectedLocationId === loc._id && (
     <View style={{
       position: 'absolute',
