@@ -23,7 +23,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { logout } from '../Redux/userSlice';
-const {width}=Dimensions.get("window")
+const {width,height}=Dimensions.get("window")
 export default function Account() {
   const token = useSelector((state) => state?.user?.userToken);
   const [data, setData] = useState(null);
@@ -127,8 +127,8 @@ const settingsList = [
   
 ];
   return (
-    <SafeAreaView style={{ flex: 1, padding: 10,paddingTop:16,backgroundColor:"#f0f0f0" }}>
-      <View style={[styles.container,{backgroundColor:"#f0f0f0",height:100}]}>
+    <SafeAreaView style={{ flex: 1,paddingTop:12,backgroundColor:"#f0f0f0" }}>
+      <View style={[styles.container,{backgroundColor:"#f0f0f0",height:100,padding:9}]}>
          <Image
           source={{
             uri:
@@ -206,7 +206,7 @@ const settingsList = [
           </View>
         </View>
       </Modal>
-<View style={{ marginTop: 2 }}>
+<View style={{ marginTop: 2,padding:6 }}>
   <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 18 }}>
     {button.map((name, index) => (
       <TouchableOpacity
@@ -219,7 +219,7 @@ const settingsList = [
           justifyContent: 'center',
           alignItems: 'center',
         }}
-        onPress={()=>{navigation.navigate('Location')}}
+        onPress={()=>{navigation.navigate(name)}}
       >
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <NewIcon name={icons[index] || 'bookmark'} size={16} color="white" />
@@ -230,8 +230,8 @@ const settingsList = [
   </View>
 </View>
 
-<View  style={{height:6,backgroundColor:"#c6c7c9ff",marginTop:14,width:width,position:"absolute",top:200}}/>
- <View  style={{marginTop:18,padding:4}}>
+<View  style={{height:6,backgroundColor:"#c6c7c9ff",marginTop:4,width:width}}/>
+ <View  style={{padding:10}}>
 
     <View style={styles.settingsList}>
         {settingsList.map((item) => (
@@ -296,7 +296,7 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     
-    marginTop:16
+    marginTop:12
     
   },
    settingsList: {

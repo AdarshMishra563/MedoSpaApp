@@ -13,7 +13,7 @@ const navigation=useNavigation();
   return (
     <SafeAreaView>
       <View  >
-           <TouchableOpacity  onPress={()=>{navigation.navigate("Login")}}><Text style={{fontSize:18,color:"black"}}>Welcome to Dashboard</Text></TouchableOpacity>
+           <TouchableOpacity  onPress={()=>{navigation.navigate("Location")}}><Text style={{fontSize:18,color:"black"}}>Welcome to Dashboard</Text></TouchableOpacity>
          </View>
       <LocationTracker />
       </SafeAreaView>

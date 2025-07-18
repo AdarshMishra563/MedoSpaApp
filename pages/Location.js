@@ -10,6 +10,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateLocation } from '../Redux/userSlice';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 
 const GOOGLE_MAPS_API_KEY = "AIzaSyAxlmVTM7QxCXm6mSpvp7_CjyLHjbdSCTw";
 Geocoder.init(GOOGLE_MAPS_API_KEY);
@@ -25,6 +27,8 @@ export default function LocationScreen() {
   const [selectedLocationId, setSelectedLocationId] = useState(null);
   const token = useSelector((state) => state.user.userToken);
 const dispatch=useDispatch();
+
+const navigation=useNavigation();
  const currentServiceLocation = useSelector((state) => state.user.location);
   useEffect(() => {
     requestLocationPermission();
@@ -42,21 +46,105 @@ const dispatch=useDispatch();
       }
     }
   };
+const calculateDistance = (lat1, lon1, lat2, lon2) => {
+  const R = 6371e3; 
+  const φ1 = lat1 * Math.PI/180;
+  const φ2 = lat2 * Math.PI/180;
+  const Δφ = (lat2-lat1) * Math.PI/180;
+  const Δλ = (lon2-lon1) * Math.PI/180;
 
-  const fetchLocation = async () => {
+  const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+            Math.cos(φ1) * Math.cos(φ2) *
+            Math.sin(Δλ/2) * Math.sin(Δλ/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+  return R * c;
+};
+const shouldAutoSaveLocation = async (newLocation, newAddress) => {
+  try {
+
+      const response = await fetch('https://medospabackend.onrender.com/data/saved-locations', {
+        method: 'GET',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      const data = await response.json();
+    const saved=data.locations;
+
+    if (saved.length === 0) return true;
+    
+   
+    const sameAddressExists = saved.some(
+      loc => loc.address.toLowerCase() === newAddress.toLowerCase()
+    );
+    if (sameAddressExists) return false;
+
+
+
+  
+    for (const savedLoc of saved) {
+      const distance = calculateDistance(
+        newLocation.latitude,
+        newLocation.longitude,
+        savedLoc.latitude,
+        savedLoc.longitude
+      );
+      console.log(distance)
+      
+      if (distance <= 28) return false;
+    }
+    
+ 
+    return true;
+  } catch (error) {
+    console.error('Error checking location:', error);
+    return false;
+  }
+}
+
+  const fetchLocation = async (data) => {
     setLoading(true);
     Geolocation.getCurrentPosition(
       async (position) => {
         const { latitude, longitude } = position.coords;
         try {
           const res = await Geocoder.from(latitude, longitude);
+          console.log(res)
           const addr = res.results[0]?.formatted_address;
           setLocation({ latitude, longitude });
           setAddress(addr);
-        dispatch(updateLocation({
+
+          const tosave={latitude,longitude};
+          const tosaveaddr=addr;
+      if(data){
+          dispatch(updateLocation({
                 coords: { latitude, longitude },
                 address: addr
               }));
+      };
+
+
+    const shouldSave = await shouldAutoSaveLocation({ latitude, longitude }, addr);
+if (shouldSave) {
+          try {
+      const response = await fetch('https://medospabackend.onrender.com/data/save-location', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ ...tosave, address:tosaveaddr }),
+      });
+      if (!response.ok) throw new Error('Failed to save');
+     
+      fetchSavedLocations();
+      setShowAddressOptions(false);
+    } catch (err) {
+      Alert.alert('Error', 'Failed to save location');
+    }
+          }
         } catch (e) {
           console.error('Geocoder error:', e);
         }
@@ -82,7 +170,7 @@ const dispatch=useDispatch();
         body: JSON.stringify({ ...location, address }),
       });
       if (!response.ok) throw new Error('Failed to save');
-      Alert.alert('Success', 'Location saved');
+     
       fetchSavedLocations();
       setShowAddressOptions(false);
     } catch (err) {
@@ -114,7 +202,7 @@ const dispatch=useDispatch();
       address: address
     }));
     
-    Alert.alert('Service Location Set', 'This location has been set for service requests');
+   
     setShowAddressOptions(false);
   };
   const fetchSavedLocations = async () => {
@@ -142,14 +230,49 @@ const dispatch=useDispatch();
       const newLoc = { latitude: loc.lat, longitude: loc.lng };
       setLocation(newLoc);
       setAddress(addr);
-   dispatch(updateLocation({
-                coords: { latitude, longitude },
-                address: addr
-              }));
+ 
     } catch (err) {
       Alert.alert('Error', 'Could not find that location');
     }
   };
+
+const handlePrdictionClick = async (input) => {
+    try {
+      const res = await Geocoder.from(input);
+      const loc = res.results[0].geometry.location;
+      const addr = res.results[0].formatted_address;
+
+      const newLoc = { latitude: loc.lat, longitude: loc.lng };
+      setLocation(newLoc);
+      setAddress(addr);
+   dispatch(updateLocation({
+                coords: { latitude:loc.lat, longitude:loc.lng },
+                address: addr
+              }));
+           try {
+      const response = await fetch('https://medospabackend.onrender.com/data/save-location', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ ...newLoc, address:addr }),
+      });
+      if (!response.ok) throw new Error('Failed to save');
+      
+      fetchSavedLocations();
+      setShowAddressOptions(false);
+      setTimeout(()=>{navigation.goBack(); },1000)
+    } catch (err) {
+      Alert.alert('Error', 'Failed to save location');
+    }
+             
+              
+    } catch (err) {
+      Alert.alert('Error', 'Could not find that location');
+    }
+  };
+
 
   const fetchPredictions = async (text) => {
     setManualInput(text);
@@ -169,6 +292,8 @@ const dispatch=useDispatch();
   };
 
   return (
+
+    <SafeAreaView style={{flex:1,backgroundColor:"#f0f0f0"}}>
     <View style={styles.container}>
       <View style={styles.searchContainer}>
         <TextInput
@@ -185,8 +310,9 @@ const dispatch=useDispatch();
                 <TouchableOpacity
                   key={prediction.place_id}
                   style={styles.predictionItem}
-                  onPress={() => {
+                  onPress={() => {handlePrdictionClick(prediction.description)
                     setManualInput(prediction.description);
+
                     setPredictions([]);
                   }}
                 >
@@ -199,7 +325,7 @@ const dispatch=useDispatch();
       </View>
 
     
-      <TouchableOpacity style={styles.locationButton} onPress={fetchLocation}>
+      <TouchableOpacity style={styles.locationButton} onPress={()=>{fetchLocation("new ")}}>
         <Icon name="my-location" size={20} color="#fff" />
         <Text style={styles.buttonText}>Use Current Location</Text>
       </TouchableOpacity>
@@ -243,52 +369,134 @@ const dispatch=useDispatch();
       <ScrollView style={styles.savedContainer}>
         {savedLocations.length > 0 ? (
           savedLocations.map((loc) => (
-            <View key={loc._id} style={styles.savedItem}>
-              <View style={styles.savedItemContent}>
-                <Text>{loc.address}</Text>
-                <Text style={styles.coordinatesText}>
-                  ({loc.latitude.toFixed(4)}, {loc.longitude.toFixed(4)})
-                </Text>
-                {currentServiceLocation?.address === loc.address && (
-                  <Text style={styles.serviceLocationTag}>Service Location</Text>
-                )}
-              </View>
-              <TouchableOpacity 
-                onPress={() => setSelectedLocationId(loc._id === selectedLocationId ? null : loc._id)}
-                style={styles.savedItemOptions}
-              >
-                <Icon name="more-vert" size={20} color="#777" />
-              </TouchableOpacity>
-              
-              {selectedLocationId === loc._id && (
-                <View style={styles.savedOptionsContainer}>
-                  <TouchableOpacity 
-                    style={styles.optionButton}
-                    onPress={() => {
-                      dispatch(updateLocation({
-                        coords: { latitude: loc.latitude, longitude: loc.longitude },
-                        address: loc.address
-                      }));
-                      setSelectedLocationId(null);
-                    }}
-                  >
-                    <Text style={styles.optionText}>Set as Service Location</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity 
-                    style={styles.deleteButton}
-                    onPress={() => deleteLocation(loc._id)}
-                  >
-                    <Text style={styles.deleteButtonText}>Delete</Text>
-                  </TouchableOpacity>
-                </View>
-              )}
-            </View>
+            <View 
+  key={loc._id} 
+  style={{
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+    position: 'relative',
+    paddingRight: 40 // Space for options icon
+  }}
+>
+ 
+  <View style={{
+    marginRight: 12,
+    alignItems: 'center',
+    width: 40
+  }}>
+    <Icon name="location-on" size={24} color="#888" />
+    {location && (
+      <Text style={{
+        fontSize: 10,
+        color: '#666',
+        marginTop: 2
+      }}>
+     {(() => {
+      const distanceInMeters = calculateDistance(
+        location.latitude,
+        location.longitude,
+        loc.latitude,
+        loc.longitude
+      );
+      return distanceInMeters < 1000 
+        ? `${distanceInMeters.toFixed(0)}m` 
+        : `${(distanceInMeters/1000).toFixed(1)}km`;
+    })()}
+      </Text>
+    )}
+  </View>
+
+  
+  <View style={{
+    flex: 1,
+    marginRight: 8,
+    minWidth: 0 
+  }}>
+    <Text 
+      style={{
+        fontSize: 14,
+        color: '#333',
+      }}
+      numberOfLines={2}
+      ellipsizeMode="tail"
+    >
+      {loc.address}
+    </Text>
+    <Text style={{
+      fontSize: 12,
+      color: '#777',
+      marginTop: 4
+    }}>
+      ({loc.latitude.toFixed(4)}, {loc.longitude.toFixed(4)})
+    </Text>
+    {currentServiceLocation?.address === loc.address && (
+      <Text style={{
+        color: '#4CAF50',
+        fontSize: 12,
+        marginTop: 4,
+        fontWeight: 'bold'
+      }}>
+        Service Location
+      </Text>
+    )}
+  </View>
+
+  {/* Options button */}
+  <TouchableOpacity 
+    onPress={() => setSelectedLocationId(loc._id === selectedLocationId ? null : loc._id)}
+    style={{
+      position: 'absolute',
+      right: 0,
+      top: 14,
+      padding: 8,
+    }}
+  >
+    <Icon name="more-vert" size={20} color="#777" />
+  </TouchableOpacity>
+  
+  {/* Options dropdown */}
+  {selectedLocationId === loc._id && (
+    <View style={{
+      position: 'absolute',
+      right: 0,
+      top: 40,
+      backgroundColor: '#f9f9f9',
+      borderRadius: 6,
+      padding: 8,
+      zIndex: 1,
+      elevation: 3,
+      width: 180
+    }}>
+      <TouchableOpacity 
+        style={{ padding: 8 }}
+        onPress={() => {
+          dispatch(updateLocation({
+            coords: { latitude: loc.latitude, longitude: loc.longitude },
+            address: loc.address
+          }));
+          setSelectedLocationId(null);
+        }}
+      >
+        <Text style={{ color: '#2196F3' }}>Set as Service Location</Text>
+      </TouchableOpacity>
+      <TouchableOpacity 
+        style={{ padding: 8 }}
+        onPress={() => deleteLocation(loc._id)}
+      >
+        <Text style={{ color: 'red' }}>Delete</Text>
+      </TouchableOpacity>
+    </View>
+  )}
+</View>
           ))
         ) : (
           <Text style={styles.noLocationsText}>No saved locations</Text>
         )}
       </ScrollView>
-    </View>
+    </View></SafeAreaView>
   );
 }
 

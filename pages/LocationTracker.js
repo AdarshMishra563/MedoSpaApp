@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -13,7 +13,7 @@ import Geolocation from 'react-native-geolocation-service';
 import Geocoder from 'react-native-geocoding';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { updateLocation } from '../Redux/userSlice';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 const GOOGLE_MAPS_API_KEY = "AIzaSyAxlmVTM7QxCXm6mSpvp7_CjyLHjbdSCTw";
 Geocoder.init(GOOGLE_MAPS_API_KEY);
@@ -40,18 +40,20 @@ export default function LocationTracker() {
   const [showModal, setShowModal] = useState(false);
   const [address, setAddress] = useState('');
   const scale = new Animated.Value(1);
+  const loc=useSelector(state=>state.user.location)
 const dispatch=useDispatch();
+const hasDispatched = useRef(false);
   useEffect(() => {
     console.log('useEffect triggered');
 
     const fetchLocation = async () => {
-      console.log('Requesting location permission...');
+      
       const granted = await requestLocationPermission();
       if (!granted) {
         console.log('Permission denied');
         return;
       }
-      console.log('Permission granted. Getting current position...');
+
 
       Geolocation.getCurrentPosition(
         async (position) => {
@@ -59,10 +61,10 @@ const dispatch=useDispatch();
           const { latitude, longitude } = position.coords;
 
           try {
-            console.log('Fetching stored location from AsyncStorage...');
-            const stored = await AsyncStorage.getItem('userLocation');
-            const storedLoc = stored ? JSON.parse(stored) : null;
-            console.log('Stored location:', storedLoc);
+          
+            const stored = loc?.coords;
+            const storedLoc = stored 
+           
 
             const distance =
               storedLoc && storedLoc.latitude
@@ -74,18 +76,20 @@ const dispatch=useDispatch();
                   )
                 : Infinity;
 
-            console.log(`Distance from last location: ${distance}`);
+            
 
-            if (distance > 100) {
+            if (distance > 180) {
              
               const res = await Geocoder.from(latitude, longitude);
               const addr = res.results[0]?.formatted_address || '';
-              console.log('Address resolved:', addr);
-
-              dispatch(updateLocation({
+              if(!hasDispatched.current){
+                 dispatch(updateLocation({
                 coords: { latitude, longitude },
                 address: addr
               }));
+
+              hasDispatched.current=true;
+              }
 
               setAddress(addr);
               setShowModal(true);
