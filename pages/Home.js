@@ -6,14 +6,30 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import DeviceInfo from 'react-native-device-info';
 import ImageButton from './Button';
-
+import { SvgXml } from 'react-native-svg';
 const { width, height } = Dimensions.get('window');
+
+const medicalBagSvg = `
+  <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="8" y="20" width="48" height="36" rx="6" fill="#EAEAEA" stroke="#333" stroke-width="2"/>
+  <path d="M24 8H40V20H24V8Z" fill="#FFFFFF" stroke="#333" stroke-width="2"/>
+  <path d="M30 34V28H34V34H40V38H34V44H30V38H24V34H30Z" fill="#4CAF50"/>
+</svg>
+
+`;
 
 const images = [
   { id: '1', uri: require('./assets/12.png') },
   { id: '2', uri: require('./assets/13.png') },
   { id: '3', uri: require('./assets/16.png') },
   { id: '4', uri: require('./assets/15.png') },
+];
+const healthcareRoles = [
+  { name: "Physiotherapist", uri: require('./assets/Physiotherapist.png') },
+  { name: "Nurses", uri:require('./assets/13.png')  },
+  { name: "Assistants", uri:require('./assets/Assistants.png')  },
+  { name: "Medical Massage", uri: require('./assets/MedicalMassage.png')  },
+  { name: "Doctors on Call", uri: require('./assets/OnCall.png')  }
 ];
 
 export default function Home() {
@@ -23,12 +39,12 @@ export default function Home() {
   const [direction, setDirection] = useState(1);
   const scrollX = useRef(new Animated.Value(0)).current;
   const texts = ['M', 'e', 'd', 'o', 'S', 'p', 'a'];
-
+const [key,setkey]=useState(0)
  
   const CARD_WIDTH = width * 0.9; 
   const CARD_MARGIN = width * 0.02; 
   const PEEK_WIDTH = (width - CARD_WIDTH) / 2; 
-
+useEffect(()=>{setTimeout(()=>{setkey(prev=>prev+1)},100)},[])
   useFocusEffect(() => {
     StatusBar.setBarStyle('dark-content');
     if (Platform.OS === 'android') {
@@ -65,6 +81,7 @@ useEffect(() => {
 }, [currentIndex, direction]);
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#f0f0f0" }}>
+       {key==0&& <StatusBar barStyle="dark-content" backgroundColor="#e1dfdfff" />}
       <View style={{ flexDirection: 'row', padding: 10, alignItems: 'center', backgroundColor: "#e1dfdfff" }}>
         <Image
           source={require('./1752603563232.jpg')}
@@ -166,11 +183,74 @@ useEffect(() => {
           </View>
         </View>
 
-<View style={{padding:14,marginTop:18}}>
-<View style={{}}><Text>Services</Text></View>
-  
+<View style={{padding:1,marginTop:6}}>
+<View style={{flexDirection:"row",alignContent:"center",alignItems:"center",padding:2,paddingLeft:6}}><Text style={{fontSize:24,fontWeight:600,marginRight:4}}>Health Care Services</Text><SvgXml style={{marginBottom:4}} xml={medicalBagSvg} width={32} height={32} /></View>
+<View style={{ 
+  flexDirection: "row", 
+  flexWrap: "wrap", 
+ 
+  justifyContent: "space-between"
+}}>
+<ImageButton  text={healthcareRoles[0].name} imageSource={healthcareRoles[0].uri}/>
+<ImageButton text={healthcareRoles[1].name} imageSource={healthcareRoles[1].uri}/>
+<ImageButton text={healthcareRoles[2].name} imageSource={healthcareRoles[2].uri}/>
+<View style={{ 
+  flexDirection: "row", 
+  flexWrap: "wrap", 
+ width:width,
+  justifyContent: "center"
+}}><ImageButton buttonHeight={86} buttonWidth={width*.42} text={healthcareRoles[3].name} imageSource={healthcareRoles[3].uri}/>
+<ImageButton buttonHeight={86}  buttonWidth={width*.42} text={healthcareRoles[4].name} imageSource={healthcareRoles[4].uri}/></View>
+
 </View>
 
+  </View>
+
+ <View style={{padding:1,marginTop:6}}>
+<View style={{flexDirection:"row",alignContent:"center",alignItems:"center",padding:4,marginTop:8,paddingLeft:8}}><Text style={{fontSize:24,fontWeight:600,marginRight:4}}> Specialists</Text><Icon style={{marginTop:4}} name='stethoscope'  size={24} color='#444242ff'/></View>
+
+<View style={{flexDirection:"row",justifyContent:"center",marginTop:8
+
+}}><ImageButton buttonHeight={96}  buttonWidth={width*.43} text={"Cardiologist"} imageSource={require('./assets/Cardiologist.png')}  />
+<ImageButton buttonHeight={96} buttonWidth={width*.43} text={"Orthopedic"} imageSource={require('./assets/Orthopedic.png')}  /></View>
+ <View style={{
+    width: width,
+    justifyContent: "center",
+    alignItems: "center",  
+  }}>
+    <ImageButton buttonHeight={110} buttonWidth={width*.54}
+      text={"General Doctors"} 
+      imageSource={require('./assets/GeneralDoctors.png')} 
+    />
+  </View>
+
+  </View>
+  <View style={{padding:1,marginTop:6}}>
+<View style={{flexDirection:"row",alignContent:"center",alignItems:"center",padding:4,marginTop:8,paddingLeft:8}}><Text style={{fontSize:24,fontWeight:600,marginRight:4}}> Physiotherapy Categories</Text><Icon style={{marginTop:4}} name='stethoscope'  size={24} color='#444242ff'/></View>
+</View>
+
+<View style={{flexDirection:"row",justifyContent:"center",marginTop:8,flexWrap:"wrap"
+
+}}>
+  
+  <ImageButton buttonHeight={96}  buttonWidth={width*.43}
+      text={"Soft Tissue Therapy"} 
+      imageSource={require('./assets/SoftTissueTherapy.png')} 
+    />
+  <ImageButton buttonHeight={96}  buttonWidth={width*.43}
+      text={"Post Surgical Rehab"} 
+      imageSource={require('./assets/PostSurgicalRehab.png')} 
+    />
+  <ImageButton buttonHeight={96}  buttonWidth={width*.43}
+      text={"Trigger Point Therapy"} 
+      imageSource={require('./assets/TriggerPointTherapy.png')} 
+    />
+  <ImageButton buttonHeight={96}  buttonWidth={width*.43}
+      text={"Deep Tissue Therapy"} 
+      imageSource={require('./assets/DeepTissueTherapy.png')} 
+    />
+    
+    </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -191,7 +271,7 @@ const styles = StyleSheet.create({
   image: {
     width: '100%',
     height: '100%',
-    borderRadius:26,
+    borderRadius:26
   },
   pagination: {
     flexDirection: 'row',

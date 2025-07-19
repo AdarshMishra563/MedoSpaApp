@@ -14,7 +14,7 @@ const ImageButton = ({
   imageSource, 
   text, 
   onPress, 
-  buttonWidth = width * 0.31,
+  buttonWidth = width * 0.29,
   buttonHeight = 80,
   overlayOpacity = 0.5 
 }) => {
@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     color: '#EAEAEA',
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '500',
     textAlign: 'center',
     paddingHorizontal: 4,
