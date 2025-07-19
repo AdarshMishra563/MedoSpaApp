@@ -12,6 +12,7 @@ import {
   Animated,
   Easing,
   Dimensions,
+  StatusBar,
 } from 'react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -21,8 +22,9 @@ import FAIcon from 'react-native-vector-icons/FontAwesome';
 import NewIcon  from 'react-native-vector-icons/MaterialIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { logout } from '../Redux/userSlice';
+
 const {width,height}=Dimensions.get("window")
 export default function Account() {
   const token = useSelector((state) => state?.user?.userToken);
@@ -93,7 +95,12 @@ const dispatch=useDispatch();
       setSaveLoading(false);
     }
   };
-
+ useFocusEffect(() => {
+  StatusBar.setBarStyle('dark-content');
+  if (Platform.OS === 'android') {
+    StatusBar.setBackgroundColor('#f0f0f0');
+  }
+});
 useEffect(()=>{
 const location= async ()=>{
 const storedLoc = await AsyncStorage.getItem('userLocation');
@@ -128,6 +135,7 @@ const settingsList = [
 ];
   return (
     <SafeAreaView style={{ flex: 1,paddingTop:12,backgroundColor:"#f0f0f0" }}>
+       <StatusBar barStyle="dark-content" backgroundColor="#f0f0f0" />
       <View style={[styles.container,{backgroundColor:"#f0f0f0",height:100,padding:9}]}>
          <Image
           source={{
