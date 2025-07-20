@@ -1,3 +1,4 @@
+import { useNavigation } from '@react-navigation/native';
 import React from 'react';
 import { 
   TouchableOpacity, 
@@ -18,6 +19,8 @@ const ImageButton = ({
   buttonHeight = 80,
   overlayOpacity = 0.5 
 }) => {
+
+  const navigation=useNavigation();
   return (
     <TouchableOpacity 
       onPress={onPress} 

@@ -6,6 +6,8 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import DeviceInfo from 'react-native-device-info';
 import ImageButton from './Button';
+import NewIcon from 'react-native-vector-icons/FontAwesome';
+
 import { SvgXml } from 'react-native-svg';
 const { width, height } = Dimensions.get('window');
 
@@ -75,13 +77,13 @@ useEffect(() => {
   viewOffset: PEEK_WIDTH - CARD_MARGIN, 
 });
     setCurrentIndex(nextIndex);
-  }, 10000);
+  }, 8000);
 
   return () => clearInterval(interval);
 }, [currentIndex, direction]);
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#f0f0f0" }}>
-       {key==0&& <StatusBar barStyle="dark-content" backgroundColor="#e1dfdfff" />}
+     
       <View style={{ flexDirection: 'row', padding: 10, alignItems: 'center', backgroundColor: "#e1dfdfff" }}>
         <Image
           source={require('./1752603563232.jpg')}
@@ -191,7 +193,10 @@ useEffect(() => {
  
   justifyContent: "space-between"
 }}>
-<ImageButton  text={healthcareRoles[0].name} imageSource={healthcareRoles[0].uri}/>
+<ImageButton onPress={()=>{navigation.navigate("BookingPage", {
+  name:healthcareRoles[0].name ,
+  imageSource: healthcareRoles[0].uri
+});}}  text={healthcareRoles[0].name} imageSource={healthcareRoles[0].uri}/>
 <ImageButton text={healthcareRoles[1].name} imageSource={healthcareRoles[1].uri}/>
 <ImageButton text={healthcareRoles[2].name} imageSource={healthcareRoles[2].uri}/>
 <View style={{ 
@@ -206,27 +211,43 @@ useEffect(() => {
 
   </View>
 
- <View style={{padding:1,marginTop:6}}>
-<View style={{flexDirection:"row",alignContent:"center",alignItems:"center",padding:4,marginTop:8,paddingLeft:8}}><Text style={{fontSize:24,fontWeight:600,marginRight:4}}> Specialists</Text><Icon style={{marginTop:4}} name='stethoscope'  size={24} color='#444242ff'/></View>
 
-<View style={{flexDirection:"row",justifyContent:"center",marginTop:8
+ <View style={{ padding: 1, marginTop: 9, width: width, height: height * 0.25, justifyContent: 'center', alignItems: 'center' }}>
+      <View style={{ width: '92%', height: '90%', backgroundColor: '#c5eff5ff', borderRadius: 14, padding: 14, position: 'relative' }}>
+        <View  style={{flexDirection:"row"}}> <Icon name="calendar-clock" size={24} color="#3c444bff" style={{marginTop:3,marginRight:1}} />  <Text style={{ fontSize: 25, color: 'black', fontWeight: '500',marginLeft:4,marginBottom:2 }}>Book an Appointment</Text>
+        
+       </View>
 
-}}><ImageButton buttonHeight={96}  buttonWidth={width*.43} text={"Cardiologist"} imageSource={require('./assets/Cardiologist.png')}  />
-<ImageButton buttonHeight={96} buttonWidth={width*.43} text={"Orthopedic"} imageSource={require('./assets/Orthopedic.png')}  /></View>
- <View style={{
-    width: width,
-    justifyContent: "center",
-    alignItems: "center",  
-  }}>
-    <ImageButton buttonHeight={110} buttonWidth={width*.54}
-      text={"General Doctors"} 
-      imageSource={require('./assets/GeneralDoctors.png')} 
-    />
-  </View>
+       
+       <Text style={{ fontSize: 14, color: '#333', marginTop: 4,marginLeft:4 }}>
+          Schedule a visit with our certified medical professionals with just one tap.
+        </Text>
 
-  </View>
-  <View style={{padding:1,marginTop:6}}>
-<View style={{flexDirection:"row",alignContent:"center",alignItems:"center",padding:4,marginTop:8,paddingLeft:8}}><Text style={{fontSize:24,fontWeight:600,marginRight:4}}> Physiotherapy Categories</Text><Icon style={{marginTop:4}} name='stethoscope'  size={24} color='#444242ff'/></View>
+     <View style={{bottom:21,left:20,position:"absolute",flexDirection:"row"}}> <Icon name="medal" size={26} color="#69503bff" /><Text style={{ fontSize: 14, color: '#333',marginLeft:4,marginTop:4,textDecorationLine:"underline" }}>
+        Certified
+        </Text></View>
+
+        
+        <TouchableOpacity 
+          style={{
+            position: 'absolute',
+            bottom: 14,
+            right: 14,
+            backgroundColor: '#96babfff',
+            paddingHorizontal: 16,
+            paddingVertical: 10,
+            borderRadius: 10,
+            elevation: 2, borderWidth: 0.3,
+  borderColor: 'black',
+          }}
+        >
+          <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Book Now</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+
+ <View style={{padding:1,marginTop:2}}>
+<View style={{flexDirection:"row",alignContent:"center",alignItems:"center",padding:4,marginTop:8,paddingLeft:4}}><Text style={{fontSize:24,fontWeight:600,marginRight:4}}> Physiotherapy Categories</Text><Icon style={{marginTop:4}} name='stethoscope'  size={24} color='#444242ff'/></View>
 </View>
 
 <View style={{flexDirection:"row",justifyContent:"center",marginTop:8,flexWrap:"wrap"
@@ -249,8 +270,159 @@ useEffect(() => {
       text={"Deep Tissue Therapy"} 
       imageSource={require('./assets/DeepTissueTherapy.png')} 
     />
-    
+    <View
+      style={{
+        padding: 1,
+        marginTop: 12,
+        width: width,
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}
+    >
+      <View
+        style={{
+          width: '92%',
+          height: height * 0.105,
+          backgroundColor: '#8ea686ff',
+          borderRadius: 14,
+          paddingHorizontal: 14,
+          paddingVertical: 10,
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
+        
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Icon name="plus-circle" size={26} color="#e22525ff" />
+          <View style={{ marginLeft: 8 }}>
+            <Text style={{ fontSize: 18, color: '#000', fontWeight: '600' }}>
+              Plus Membership
+            </Text>
+            <Text style={{ fontSize: 12, color: '#555' }}>
+              Unlock premium features & care
+            </Text>
+          </View>
+        </View>
+
+        
+        <TouchableOpacity
+          style={{
+            backgroundColor: '#0288D1',
+            paddingHorizontal: 18,
+            paddingVertical: 8,
+            borderRadius: 10,
+            borderWidth: 0.4,
+            borderColor: '#005B9F',
+          }}
+        >
+          <Text style={{ color: '#fff', fontWeight: '600' }}>Get</Text>
+        </TouchableOpacity>
+      </View>
     </View>
+    </View>
+ <View style={{padding:1,marginTop:6}}>
+<View style={{flexDirection:"row",alignContent:"center",alignItems:"center",padding:4,marginTop:8,paddingLeft:8}}><Text style={{fontSize:24,fontWeight:600,marginRight:4}}> Specialists</Text><Icon style={{marginTop:4}} name='stethoscope'  size={24} color='#444242ff'/></View>
+
+<View style={{flexDirection:"row",justifyContent:"center",marginTop:8
+
+}}><ImageButton buttonHeight={96}  buttonWidth={width*.43} text={"Cardiologist"} imageSource={require('./assets/Cardiologist.png')}  />
+<ImageButton buttonHeight={96} buttonWidth={width*.43} text={"Orthopedic"} imageSource={require('./assets/Orthopedic.png')}  /></View>
+ <View style={{
+    width: width,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingRight:1  
+  }}>
+    <ImageButton buttonHeight={112} buttonWidth={width*.82}
+      text={"General Doctors"} 
+      imageSource={require('./assets/GeneralDoctors.png')} 
+    />
+  </View>
+
+  </View>
+    <View
+      style={{
+        padding: 1,
+        marginTop: 12,
+        width: width,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom:6
+      }}
+    >
+      <View
+        style={{
+          width: '92%',
+          backgroundColor: '#beaf90ff',
+          borderRadius: 14,
+          padding: 16,
+        }}
+      >
+       
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
+          <Icon name="account-question" size={24} color="#3c444b" />
+          <Text
+            style={{
+              fontSize: 22,
+              color: '#000',
+              fontWeight: '500',
+              marginLeft: 6,
+            }}
+          >
+            Ask Questions or Contact Us
+          </Text>
+        </View>
+
+  
+        <Text style={{ fontSize: 14, color: '#444', marginLeft: 2 }}>
+          Reach out to our support team anytime for help, queries, or assistance with services.
+        </Text>
+
+        
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'flex-end',
+            marginTop: 16,
+            gap: 12,
+          }}
+        >
+       
+          <TouchableOpacity
+            style={{
+              width: 42,
+              height: 42,
+              borderRadius: 21,
+              borderWidth: 0.6,
+              borderColor: '#333',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: 'transparent',
+            }}
+          >
+            <Icon name="phone" size={20} color="#333" />
+          </TouchableOpacity>
+
+         
+          <TouchableOpacity
+            style={{
+              width: 42,
+              height: 42,
+              borderRadius: 21,
+              borderWidth: 0.6,
+              borderColor: '#333',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: 'transparent',
+            }}
+          >
+            <Icon name="message" size={20} color="#333" />
+          </TouchableOpacity>
+        </View>
+      </View>
+    </View>
+ 
       </ScrollView>
     </SafeAreaView>
   );

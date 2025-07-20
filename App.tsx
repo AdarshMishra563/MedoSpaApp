@@ -11,12 +11,15 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Home from './pages/Home';
 import Account from './pages/Account';
 import Bookings from './pages/Bookings';
-import { Provider, useSelector } from 'react-redux';
+import { Provider, useDispatch, useSelector } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import { persistor, store } from './Redux/store';
 import axios from 'axios';
 import LocationScreen from './pages/Location';
 import PlansScreen from './pages/PlansScreen';
+import LocationTracker from './pages/LocationTracker';
+import { clearUserInfo, updateUserInfo } from './Redux/userSlice';
+import BookingPage from './pages/BookingPage';
 
 
 const Stack = createNativeStackNavigator();
@@ -25,6 +28,29 @@ const TabNavigator=()=>{
 const [image,setimage]=useState("");
 const navigation=useNavigation();
 const token=useSelector(state=>state?.user?.userToken);
+
+const dispatch=useDispatch();
+const handleUserInfoUpdate = (dispatch, { name, phoneNumber,picture }) => {
+  let isValidPhone = false;
+
+  if (phoneNumber?.startsWith('+')) {
+    isValidPhone = phoneNumber.length === 13;
+  } else {
+    isValidPhone = phoneNumber.length === 10 && /^\d+$/.test(phoneNumber);
+  }
+
+  const finalName = name?.trim() ? name : null;
+
+  if (isValidPhone || finalName) {
+    dispatch(updateUserInfo({
+      name: finalName,
+      phoneNumber: isValidPhone ? phoneNumber : null,
+      picture:picture
+    }));
+  } else {
+    dispatch(clearUserInfo());
+  }
+};
 useEffect(()=>{
 
 const fetch=async ()=>{
@@ -35,6 +61,8 @@ const res=await axios.get("https://medospabackend.onrender.com/data/getUser",{
 });
 
 if(res.status==200){
+
+  handleUserInfoUpdate(dispatch, {name:res?.data.name,phoneNumber:res?.data.phoneNumber,picture:res?.data.picture});
   console.log(token,res)
   setimage(res.data.picture)
 }
@@ -140,6 +168,7 @@ navigation.navigate("Login")
 <Stack.Screen name='Dashboard' component={TabNavigator}/>
 <Stack.Screen name='Location' component={LocationScreen}/>
 <Stack.Screen name='PlansScreen' component={PlansScreen}/>
+<Stack.Screen name='BookingPage' component={BookingPage}/>
       
     </Stack.Navigator></NavigationContainer>
   )
@@ -151,6 +180,7 @@ export default function App(){
   return (
       <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
+        <LocationTracker/>
         <Main />
       </PersistGate>
     </Provider>
