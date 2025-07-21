@@ -82,8 +82,8 @@ useEffect(() => {
   return () => clearInterval(interval);
 }, [currentIndex, direction]);
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#f0f0f0" }}>
-     
+    <SafeAreaView edges={['top', 'left', 'right']}  style={{ flex: 1, backgroundColor: "#e1dfdfff", }}>
+       <StatusBar barStyle="dark-content" backgroundColor="#e1dfdfff" />
       <View style={{ flexDirection: 'row', padding: 10, alignItems: 'center', backgroundColor: "#e1dfdfff" }}>
         <Image
           source={require('./1752603563232.jpg')}
@@ -107,7 +107,7 @@ useEffect(() => {
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={{ flex: 1, backgroundColor: "#f6f5f5ff" }}>
+      <ScrollView  contentContainerStyle={{ paddingBottom: 60 }} showsVerticalScrollIndicator={false} style={{ flex: 1, backgroundColor: "#f6f5f5ff" }}>
         <View style={{ marginTop: 28, justifyContent: "center", alignItems: "center" }}>
       
           <View style={{ height: height * 0.196, width }}>
@@ -196,25 +196,31 @@ useEffect(() => {
 <ImageButton onPress={()=>{navigation.navigate("BookingPage", {
   name:healthcareRoles[0].name ,
   imageSource: healthcareRoles[0].uri
-});}}  text={healthcareRoles[0].name} imageSource={healthcareRoles[0].uri}/>
-<ImageButton text={healthcareRoles[1].name} imageSource={healthcareRoles[1].uri}/>
-<ImageButton text={healthcareRoles[2].name} imageSource={healthcareRoles[2].uri}/>
+})}}  text={healthcareRoles[0].name} imageSource={healthcareRoles[0].uri}/>
+<ImageButton onPress={()=>{navigation.navigate("BookingPage", {
+  name:healthcareRoles[1].name ,
+  imageSource: healthcareRoles[1].uri
+})}} text={healthcareRoles[1].name} imageSource={healthcareRoles[1].uri}/>
+<ImageButton  onPress={()=>{navigation.navigate("BookingPage", {
+  name:healthcareRoles[2].name ,
+  imageSource: healthcareRoles[2].uri
+})}} text={healthcareRoles[2].name} imageSource={healthcareRoles[2].uri}/>
 <View style={{ 
   flexDirection: "row", 
   flexWrap: "wrap", 
  width:width,
   justifyContent: "center"
-}}><ImageButton buttonHeight={86} buttonWidth={width*.42} text={healthcareRoles[3].name} imageSource={healthcareRoles[3].uri}/>
-<ImageButton buttonHeight={86}  buttonWidth={width*.42} text={healthcareRoles[4].name} imageSource={healthcareRoles[4].uri}/></View>
+}}><ImageButton  onPress={()=>{navigation.navigate("MassageBooking")}} buttonHeight={86} buttonWidth={width*.42} text={healthcareRoles[3].name} imageSource={healthcareRoles[3].uri}/>
+<ImageButton  onPress={()=>{navigation.navigate("DoctorsOnCall")}} buttonHeight={86}  buttonWidth={width*.42} text={healthcareRoles[4].name} imageSource={healthcareRoles[4].uri}/></View>
 
 </View>
 
   </View>
 
 
- <View style={{ padding: 1, marginTop: 9, width: width, height: height * 0.25, justifyContent: 'center', alignItems: 'center' }}>
-      <View style={{ width: '92%', height: '90%', backgroundColor: '#c5eff5ff', borderRadius: 14, padding: 14, position: 'relative' }}>
-        <View  style={{flexDirection:"row"}}> <Icon name="calendar-clock" size={24} color="#3c444bff" style={{marginTop:3,marginRight:1}} />  <Text style={{ fontSize: 25, color: 'black', fontWeight: '500',marginLeft:4,marginBottom:2 }}>Book an Appointment</Text>
+ <View style={{ padding: 1, marginTop: 9, width: width, height: height * 0.23, justifyContent: 'center', alignItems: 'center' }}>
+      <View style={{ width: '96%', height: '90%', backgroundColor: '#c5eff5ff', borderRadius: 14, padding: 14, position: 'relative' }}>
+        <View  style={{flexDirection:"row"}}> <Icon name="calendar-clock" size={24} color="#3c444bff" style={{marginTop:5,marginRight:1}} />  <Text style={{ fontSize: 25, color: 'black', fontWeight: '500',marginLeft:4,marginBottom:2 }}>Book an Appointment</Text>
         
        </View>
 

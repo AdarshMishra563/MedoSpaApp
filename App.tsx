@@ -20,6 +20,8 @@ import PlansScreen from './pages/PlansScreen';
 import LocationTracker from './pages/LocationTracker';
 import { clearUserInfo, updateUserInfo } from './Redux/userSlice';
 import BookingPage from './pages/BookingPage';
+import MassageTherapiesPage from './pages/MedicalMassages';
+import HomeServicesScreen from './pages/DoctorsOnCall';
 
 
 const Stack = createNativeStackNavigator();
@@ -80,7 +82,8 @@ navigation.navigate("Login")
  <Tab.Navigator
   screenOptions={({ route }) => ({
     headerShown: false,
-    tabBarStyle:{ backgroundColor:"#f0f0f0"},
+    safeAreaInsets: { bottom: 0 },
+    tabBarStyle:{ backgroundColor:"#f0f0f0",elevation:0},
     tabBarIcon: ({ focused, color, size }) => {
       if (route.name === 'Home') {
         return (
@@ -169,6 +172,8 @@ navigation.navigate("Login")
 <Stack.Screen name='Location' component={LocationScreen}/>
 <Stack.Screen name='PlansScreen' component={PlansScreen}/>
 <Stack.Screen name='BookingPage' component={BookingPage}/>
+<Stack.Screen name='DoctorsOnCall' component={HomeServicesScreen}/>
+<Stack.Screen name='MassageBooking' component={MassageTherapiesPage}/>
       
     </Stack.Navigator></NavigationContainer>
   )

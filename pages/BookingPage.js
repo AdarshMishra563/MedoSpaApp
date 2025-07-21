@@ -15,6 +15,7 @@ import Icon from 'react-native-vector-icons/Feather';
 import { useSelector } from 'react-redux';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import ErrorPopup from './ErrorPopup';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get('window');
 
@@ -91,7 +92,7 @@ const BookingPage = () => {
     };
 
     try {
-      const response = await fetch('http://192.168.126.118:5000/data/book', {
+      const response = await fetch('https://medospabackend.onrender.com/data/book', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -121,6 +122,8 @@ console.log(result)
   };
 
   return (
+
+    <SafeAreaView style={{flex:1}} >
     <ScrollView contentContainerStyle={{ padding: 16 }}>
       {errorPopup && <ErrorPopup message={errorPopup} onHide={() => setErrorPopup(null)} />}
 
@@ -129,7 +132,7 @@ console.log(result)
       </Text>
 
       <Image
-        source={imageSource}
+        source={imageSource }
         style={{
           width: width * 0.92,
           height: 200,
@@ -304,7 +307,7 @@ console.log(result)
           </Text>
         )}
       </TouchableOpacity>
-    </ScrollView>
+    </ScrollView></SafeAreaView>
   );
 };
 
