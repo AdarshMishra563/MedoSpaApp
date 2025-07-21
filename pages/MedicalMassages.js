@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -7,34 +7,47 @@ import {
   ScrollView,
   StyleSheet,
   Animated,
-  SafeAreaView,
+ 
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation } from '@react-navigation/native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useCart } from './useCart';
+import { useSelector } from 'react-redux';
+import ErrorPopup from './ErrorPopup';
 
 const { width } = Dimensions.get('window');
 
 const therapies = [
   {
+    id: 'massage1', // Added unique IDs for cart operations
     title: 'Ayurveda Massage',
     description: 'Traditional Indian healing therapy for body balance.',
+    price: 60, // Added price for cart
   },
   {
+    id: 'massage2',
     title: 'Kerala Massage',
     description: 'Deep relaxation using herbal oils and rhythmic strokes.',
+    price: 70,
   },
   {
+    id: 'massage3',
     title: 'Swedish Massage',
     description: 'Classic European technique for relaxation and circulation.',
+    price: 65,
   },
   {
+    id: 'massage4',
     title: 'Stone Therapy',
     description: 'Hot stone massage to ease muscle tension and stress.',
+    price: 80,
   },
 ];
 
-const MassageCard = ({ item, index, navigation }) => {
+const MassageCard = ({ item, index, navigation,addToCart,setErrorPopup }) => {
   const translateX = useRef(new Animated.Value(index % 2 === 0 ? -width : width)).current;
+
 
   useEffect(() => {
     Animated.spring(translateX, {
@@ -45,13 +58,32 @@ const MassageCard = ({ item, index, navigation }) => {
     }).start();
   }, []);
 
+ const handleBook = async () => {
+    console.log("book")
+    try {
+      await addToCart({
+        id: item.id,
+        name: item.title,
+        description: item.description,
+        price: item.price,
+        imageSource: require('./assets/16.png')
+      });
+      setErrorPopup("Added To Cart")
+    
+    } catch (error) {
+        setErrorPopup("Alredy in Cart")
+      Alert.alert('Error', 'Failed to add to cart');
+    }
+  };
   return (
     <Animated.View style={[styles.card, { transform: [{ translateX }] }]}>
+     
       <View style={styles.cardHeader}>
+  
         <Text style={styles.cardTitle}>{item.title}</Text>
-        <View style={styles.iconCircle}>
+        <TouchableOpacity onPress={handleBook}><View style={styles.iconCircle}>
           <MaterialCommunityIcons name="medical-bag" size={20} color="#555" />
-        </View>
+        </View></TouchableOpacity>
       </View>
       <Text style={styles.cardDesc}>{item.description}</Text>
       <TouchableOpacity
@@ -70,11 +102,16 @@ const MassageCard = ({ item, index, navigation }) => {
 };
 
 const MassageTherapiesPage = () => {
+const [errorPopup,setErrorPopup]=useState(null);
+    const items=useSelector(state=>state.cart.items);
+    console.log(items)
   const navigation = useNavigation();
-
+const { addToCart } = useCart();
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#f0f0f0' }}>
+        
       <ScrollView style={styles.container}>
+              {errorPopup&& <ErrorPopup message="Added to cart" Color='green' onHide={()=>{setErrorPopup(null)}}/>}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <MaterialCommunityIcons name="arrow-left" size={26} color="#333" />
@@ -83,7 +120,7 @@ const MassageTherapiesPage = () => {
         </View>
 
         {therapies.map((item, index) => (
-          <MassageCard key={index} item={item} index={index} navigation={navigation} />
+          <MassageCard key={index} item={item} index={index} navigation={navigation} addToCart={addToCart} setErrorPopup={setErrorPopup}/>
         ))}
 
         <View style={styles.certifiedBox}>

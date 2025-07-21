@@ -22,6 +22,10 @@ import { clearUserInfo, updateUserInfo } from './Redux/userSlice';
 import BookingPage from './pages/BookingPage';
 import MassageTherapiesPage from './pages/MedicalMassages';
 import HomeServicesScreen from './pages/DoctorsOnCall';
+import GeneralDutyAssistantsPage from './pages/AssistantsBooking';
+import ServicesList from './pages/Appointment';
+import CartScreen from './pages/CartScreen';
+import { MenuProvider } from 'react-native-popup-menu';
 
 
 const Stack = createNativeStackNavigator();
@@ -165,6 +169,7 @@ navigation.navigate("Login")
 
   
   return (
+    <MenuProvider>
     <NavigationContainer>
     <Stack.Navigator  initialRouteName={token?"Dashboard":"Login"} screenOptions={{headerShown:false}}>
 <Stack.Screen name='Login' component={Login}/>
@@ -174,8 +179,11 @@ navigation.navigate("Login")
 <Stack.Screen name='BookingPage' component={BookingPage}/>
 <Stack.Screen name='DoctorsOnCall' component={HomeServicesScreen}/>
 <Stack.Screen name='MassageBooking' component={MassageTherapiesPage}/>
+<Stack.Screen name='AssistantsBooking' component={GeneralDutyAssistantsPage}/>
+<Stack.Screen name='Appointment' component={ServicesList}/>
+<Stack.Screen name='Cart' component={CartScreen}/>
       
-    </Stack.Navigator></NavigationContainer>
+    </Stack.Navigator></NavigationContainer></MenuProvider>
   )
 }
 export default function App(){

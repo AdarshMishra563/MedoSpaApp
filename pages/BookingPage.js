@@ -16,6 +16,7 @@ import { useSelector } from 'react-redux';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import ErrorPopup from './ErrorPopup';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 const { width } = Dimensions.get('window');
 
@@ -31,8 +32,9 @@ const BookingPage = () => {
 
   const [phoneNumber, setPhoneNumber] = useState(userInfo.phoneNumber || '');
   const [editingPhone, setEditingPhone] = useState(!userInfo.phoneNumber);
+const [showDatePicker, setShowDatePicker] = useState(false);
+const [appointmentDate, setAppointmentDate] = useState(new Date());
 
-  const [appointmentDate, setAppointmentDate] = useState('');
   const [isHomeService, setIsHomeService] = useState(false);
   const [landmark, setLandmark] = useState('');
   const [homeDetails, setHomeDetails] = useState('');
@@ -53,8 +55,11 @@ const BookingPage = () => {
 
     if (!name.trim()) errors.name = 'Name is required';
     if (!phoneNumber.trim()) errors.phoneNumber = 'Phone number is required';
-    if (!appointmentDate.trim()) errors.appointmentDate = 'Date is required';
-
+    if (!appointmentDate || isNaN(appointmentDate.getTime())) {
+    errors.appointmentDate = 'Valid date is required';
+  } else if (appointmentDate < new Date()) {
+    errors.appointmentDate = 'Date cannot be in the past';
+  }
     if (isHomeService) {
       if (!landmark.trim()) errors.landmark = 'Landmark is required';
       if (!homeDetails.trim()) errors.homeDetails = 'Building/floor info is required';
@@ -64,21 +69,32 @@ const BookingPage = () => {
     return Object.keys(errors).length === 0;
   };
 
-  const formatDateToISO = (dateStr) => {
-    const data = dateStr.split("-");
-    return `${data[2]}-${data[1]}-${data[0]}`;
-  };
+
+  const handleDateChange = (event, selectedDate) => {
+  setShowDatePicker(false);
+  if (selectedDate) {
+    setAppointmentDate(selectedDate);
+  }
+};
+
+
+const formatDate = (date) => {
+  return date.toLocaleDateString('en-GB');
+};
+
 
   const handleSubmit = async () => {
+  
     if (!validateFields()) return;
     
     setIsSubmitting(true);
-    const formattedDate = formatDateToISO(appointmentDate);
+      
+   
     const payload = {
       name: name.trim(),
       phoneNumber: phoneNumber.trim(),
       picture: userInfo.picture,
-      appointmentDate: formattedDate,
+      appointmentDate: appointmentDate.toISOString(),
       location: {
         address: location?.address,
         coords: location?.coords,
@@ -90,6 +106,7 @@ const BookingPage = () => {
         buildingInfo: homeDetails.trim(),
       }),
     };
+  
 
     try {
       const response = await fetch('https://medospabackend.onrender.com/data/book', {
@@ -213,23 +230,39 @@ console.log(result)
       </View>
 
    
-      <View style={{ marginBottom: 12 }}>
-        <Text style={{ marginBottom: 4 }}>Appointment Date</Text>
-        <TextInput
-          value={appointmentDate}
-          onChangeText={setAppointmentDate}
-          placeholder="DD-MM-YYYY"
-          style={{
-            borderWidth: 0.7,
-            borderColor: fieldErrors.appointmentDate ? 'red' : '#888',
-            borderRadius: 8,
-            padding: 8,
-          }}
-        />
-        {fieldErrors.appointmentDate && (
-          <Text style={{ color: 'red' }}>{fieldErrors.appointmentDate}</Text>
-        )}
-      </View>
+     <View style={{ marginBottom: 12 }}>
+  <Text style={{ marginBottom: 4 }}>Appointment Date</Text>
+  <TouchableOpacity
+    onPress={() => setShowDatePicker(true)}
+    style={{
+      borderWidth: 0.7,
+      borderColor: fieldErrors.appointmentDate ? 'red' : '#888',
+      borderRadius: 8,
+      padding: 8,
+      justifyContent: 'space-between',
+      height: 40,
+      flexDirection: 'row',
+      alignItems: 'center',
+    }}
+  >
+    <Text>{formatDate(appointmentDate)}</Text>
+    <Icon name="calendar" size={20} color="#888" />
+  </TouchableOpacity>
+
+  {showDatePicker && (
+    <DateTimePicker
+      value={appointmentDate}
+      mode="date"
+      display="default"
+      onChange={handleDateChange}
+      minimumDate={new Date()}
+    />
+  )}
+
+  {fieldErrors.appointmentDate && (
+    <Text style={{ color: 'red' }}>{fieldErrors.appointmentDate}</Text>
+  )}
+</View>
 
      
       <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>

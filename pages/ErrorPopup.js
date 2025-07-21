@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { Animated, Text, View } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 
-const ErrorPopup = ({ message, onHide }) => {
+const ErrorPopup = ({ message, onHide,Color="red" }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -30,7 +30,7 @@ const ErrorPopup = ({ message, onHide }) => {
         right: 20,
         padding: 14,
         borderRadius: 10,
-        backgroundColor: '#ff4d4f',
+        backgroundColor: `${Color}`,
         flexDirection: 'row',
         alignItems: 'center',
         elevation: 3,

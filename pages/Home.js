@@ -9,6 +9,8 @@ import ImageButton from './Button';
 import NewIcon from 'react-native-vector-icons/FontAwesome';
 
 import { SvgXml } from 'react-native-svg';
+import { useCart } from './useCart';
+import ErrorPopup from './ErrorPopup';
 const { width, height } = Dimensions.get('window');
 
 const medicalBagSvg = `
@@ -27,22 +29,117 @@ const images = [
   { id: '4', uri: require('./assets/15.png') },
 ];
 const healthcareRoles = [
-  { name: "Physiotherapist", uri: require('./assets/Physiotherapist.png') },
-  { name: "Nurses", uri:require('./assets/13.png')  },
-  { name: "Assistants", uri:require('./assets/Assistants.png')  },
-  { name: "Medical Massage", uri: require('./assets/MedicalMassage.png')  },
-  { name: "Doctors on Call", uri: require('./assets/OnCall.png')  }
+  {
+    id: 'physio1',
+    name: "Physiotherapist",
+    description: "Professional physical therapy for recovery and mobility improvement",
+    price: 60,
+    duration: "60 min session",
+    uri: require('./assets/Physiotherapist.png')
+  },
+  {
+    id: 'nurse1',
+    name: "Nurses",
+    description: "Skilled nursing care for medical support and monitoring",
+    price: 45,
+    duration: "4 hour minimum",
+    uri: require('./assets/13.png')
+  },
+  {
+    id: 'assistant1',
+    name: "Assistants",
+    description: "Trained healthcare assistants for daily support and basic care",
+    price: 30,
+    duration: "4 hour minimum",
+    uri: require('./assets/Assistants.png')
+  },
+  {
+    id: 'massage1',
+    name: "Medical Massage",
+    description: "Therapeutic massage for pain relief and muscle relaxation",
+    price: 55,
+    duration: "45 min session",
+    uri: require('./assets/MedicalMassage.png')
+  },
+  {
+    id: 'doctor1',
+    name: "Doctors on Call",
+    description: "Qualified physicians available for urgent medical consultations",
+    price: 80,
+    duration: "30 min consultation",
+    uri: require('./assets/OnCall.png')
+  }
 ];
-
+const therapyServices = [
+  {
+    id: 'softTissue1',
+    name: "Soft Tissue Therapy",
+    description: "Specialized treatment for muscle and connective tissue injuries",
+    price: 65,
+    duration: "60 min session",
+    uri: require('./assets/SoftTissueTherapy.png')
+  },
+  {
+    id: 'postSurgical1',
+    name: "Post Surgical Rehab",
+    description: "Rehabilitation program to restore mobility after surgery",
+    price: 70,
+    duration: "60 min session",
+    uri: require('./assets/PostSurgicalRehab.png')
+  },
+  {
+    id: 'triggerPoint1',
+    name: "Trigger Point Therapy",
+    description: "Targeted treatment for muscle knots and tension areas",
+    price: 60,
+    duration: "45 min session",
+    uri: require('./assets/TriggerPointTherapy.png')
+  },
+  {
+    id: 'deepTissue1',
+    name: "Deep Tissue Therapy",
+    description: "Intensive massage for chronic muscle tension and pain",
+    price: 75,
+    duration: "60 min session",
+    uri: require('./assets/DeepTissueTherapy.png')
+  }
+];
+const specialistDoctors = [
+  {
+    id: 'cardio1',
+    name: "Cardiologist",
+    description: "Heart specialists for cardiovascular health and conditions",
+    price: 120,
+    duration: "30 min consultation",
+    uri: require('./assets/Cardiologist.png')
+  },
+  {
+    id: 'ortho1',
+    name: "Orthopedic",
+    description: "Specialists in bone, joint and musculoskeletal system care",
+    price: 110,
+    duration: "30 min consultation",
+    uri: require('./assets/Orthopedic.png')
+  },
+  {
+    id: 'generalDoc1',
+    name: "General Doctors",
+    description: "Comprehensive medical care for all general health concerns",
+    price: 90,
+    duration: "30 min consultation",
+    uri: require('./assets/GeneralDoctors.png')
+  }
+];
 export default function Home() {
   const navigation = useNavigation();
   const flatListRef = useRef(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(1);
+       const [errorPopup,setErrorPopup]=useState(null);
   const scrollX = useRef(new Animated.Value(0)).current;
   const texts = ['M', 'e', 'd', 'o', 'S', 'p', 'a'];
 const [key,setkey]=useState(0)
- 
+   const { addToCart, cartItems } = useCart();
   const CARD_WIDTH = width * 0.9; 
   const CARD_MARGIN = width * 0.02; 
   const PEEK_WIDTH = (width - CARD_WIDTH) / 2; 
@@ -81,6 +178,23 @@ useEffect(() => {
 
   return () => clearInterval(interval);
 }, [currentIndex, direction]);
+
+ const handleAddToCart = async (item) => {
+    try {
+       addToCart({
+        id: item.id,
+        name: item.name,
+        description: item.description,
+        price: item.price,
+        duration: item.duration,
+        imageSource: item.uri
+      });
+    setErrorPopup("Added to Cart");
+    } catch (error) {
+      Alert.alert('Error', 'Failed to add to cart');
+    }
+  };
+
   return (
     <SafeAreaView edges={['top', 'left', 'right']}  style={{ flex: 1, backgroundColor: "#e1dfdfff", }}>
        <StatusBar barStyle="dark-content" backgroundColor="#e1dfdfff" />
@@ -94,7 +208,7 @@ useEffect(() => {
             marginBottom: 3,
             resizeMode: "contain"
           }}
-        />
+        /> {errorPopup && <ErrorPopup message='Added to cart' Color='green' onHide={()=>{setErrorPopup(null)}}/>}
         {texts.map((word, index) => (
           <View key={index} style={{ flexDirection: "column" }}>
             <Text style={{ fontSize: 32, fontWeight: '500', color: 'gray', padding: 2 }}>
@@ -102,12 +216,41 @@ useEffect(() => {
             </Text>
           </View>
         ))}
-        <TouchableOpacity style={{ marginLeft: 'auto', padding: 8 }} onPress={() => console.log('Icon pressed')}>
-          <Icon name="medical-bag" size={24} color="gray" />
-        </TouchableOpacity>
+       <TouchableOpacity 
+  style={{ 
+    marginLeft: 'auto', 
+    padding: 8,
+    position: 'relative' 
+  }} 
+  onPress={() => navigation.navigate("Cart")}
+>
+  <Icon name="medical-bag" size={24} color="gray" />
+  {cartItems.length > 0 && (
+    <View style={{
+      position: 'absolute',
+      right: 4,
+      bottom: 4,
+      backgroundColor: 'red',
+      borderRadius: 7,
+      width: 14,
+      height: 14,
+      justifyContent: 'center',
+      alignItems: 'center',
+    }}>
+      <Text style={{
+        color: 'white',
+        fontSize: 9,
+        fontWeight: 'bold'
+      }}>
+        {cartItems.length > 9 ? '9+' : cartItems.length}
+      </Text>
+    </View>
+  )}
+</TouchableOpacity>
       </View>
 
       <ScrollView  contentContainerStyle={{ paddingBottom: 60 }} showsVerticalScrollIndicator={false} style={{ flex: 1, backgroundColor: "#f6f5f5ff" }}>
+         
         <View style={{ marginTop: 28, justifyContent: "center", alignItems: "center" }}>
       
           <View style={{ height: height * 0.196, width }}>
@@ -193,18 +336,15 @@ useEffect(() => {
  
   justifyContent: "space-between"
 }}>
-<ImageButton onPress={()=>{navigation.navigate("BookingPage", {
+<ImageButton onLongPress={()=>{handleAddToCart(healthcareRoles[0])}} onPress={()=>{navigation.navigate("BookingPage", {
   name:healthcareRoles[0].name ,
   imageSource: healthcareRoles[0].uri
 })}}  text={healthcareRoles[0].name} imageSource={healthcareRoles[0].uri}/>
-<ImageButton onPress={()=>{navigation.navigate("BookingPage", {
+<ImageButton onLongPress={()=>{handleAddToCart(healthcareRoles[0])}} onPress={()=>{navigation.navigate("BookingPage", {
   name:healthcareRoles[1].name ,
   imageSource: healthcareRoles[1].uri
 })}} text={healthcareRoles[1].name} imageSource={healthcareRoles[1].uri}/>
-<ImageButton  onPress={()=>{navigation.navigate("BookingPage", {
-  name:healthcareRoles[2].name ,
-  imageSource: healthcareRoles[2].uri
-})}} text={healthcareRoles[2].name} imageSource={healthcareRoles[2].uri}/>
+<ImageButton  onPress={()=>{navigation.navigate("AssistantsBooking")}} text={healthcareRoles[2].name} imageSource={healthcareRoles[2].uri}/>
 <View style={{ 
   flexDirection: "row", 
   flexWrap: "wrap", 
@@ -246,6 +386,7 @@ useEffect(() => {
             elevation: 2, borderWidth: 0.3,
   borderColor: 'black',
           }}
+          onPress={()=>{navigation.navigate("Appointment")}}
         >
           <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Book Now</Text>
         </TouchableOpacity>
@@ -260,19 +401,31 @@ useEffect(() => {
 
 }}>
   
-  <ImageButton buttonHeight={96}  buttonWidth={width*.43}
+  <ImageButton  onLongPress={()=>{handleAddToCart(therapyServices[0])}} onPress={()=>{navigation.navigate("BookingPage", {
+  name:"Soft Tissue Therapy" ,
+  imageSource:require('./assets/SoftTissueTherapy.png')
+})}}   buttonHeight={96}  buttonWidth={width*.43}
       text={"Soft Tissue Therapy"} 
       imageSource={require('./assets/SoftTissueTherapy.png')} 
     />
-  <ImageButton buttonHeight={96}  buttonWidth={width*.43}
+  <ImageButton onLongPress={()=>{handleAddToCart(therapyServices[1])}} onPress={()=>{navigation.navigate("BookingPage", {
+  name:"Post Surgical Rehab" ,
+  imageSource:require('./assets/PostSurgicalRehab.png')
+})}}  buttonHeight={96}  buttonWidth={width*.43}
       text={"Post Surgical Rehab"} 
       imageSource={require('./assets/PostSurgicalRehab.png')} 
     />
-  <ImageButton buttonHeight={96}  buttonWidth={width*.43}
+  <ImageButton onLongPress={()=>{handleAddToCart(therapyServices[2])}} onPress={()=>{navigation.navigate("BookingPage", {
+  name:"Trigger Point Therapy" ,
+  imageSource:require('./assets/TriggerPointTherapy.png')
+})}}  buttonHeight={96}  buttonWidth={width*.43}
       text={"Trigger Point Therapy"} 
       imageSource={require('./assets/TriggerPointTherapy.png')} 
     />
-  <ImageButton buttonHeight={96}  buttonWidth={width*.43}
+  <ImageButton onLongPress={()=>{handleAddToCart(therapyServices[3])}} onPress={()=>{navigation.navigate("BookingPage", {
+  name:"Deep Tissue Therapy" ,
+  imageSource:require('./assets/DeepTissueTherapy.png')
+})}}  buttonHeight={96}  buttonWidth={width*.43}
       text={"Deep Tissue Therapy"} 
       imageSource={require('./assets/DeepTissueTherapy.png')} 
     />
@@ -332,15 +485,24 @@ useEffect(() => {
 
 <View style={{flexDirection:"row",justifyContent:"center",marginTop:8
 
-}}><ImageButton buttonHeight={96}  buttonWidth={width*.43} text={"Cardiologist"} imageSource={require('./assets/Cardiologist.png')}  />
-<ImageButton buttonHeight={96} buttonWidth={width*.43} text={"Orthopedic"} imageSource={require('./assets/Orthopedic.png')}  /></View>
+}}><ImageButton onLongPress={()=>{handleAddToCart(specialistDoctors[0])}} onPress={()=>{navigation.navigate("BookingPage", {
+  name:"Cardiologist" ,
+  imageSource:require('./assets/Cardiologist.png')
+})}} buttonHeight={96}  buttonWidth={width*.43} text={"Cardiologist"} imageSource={require('./assets/Cardiologist.png')}  />
+<ImageButton onLongPress={()=>{handleAddToCart(specialistDoctors[1])}} onPress={()=>{navigation.navigate("BookingPage", {
+  name:"Orthopedic" ,
+  imageSource:require('./assets/Orthopedic.png')
+})}} buttonHeight={96} buttonWidth={width*.43} text={"Orthopedic"} imageSource={require('./assets/Orthopedic.png')}  /></View>
  <View style={{
     width: width,
     justifyContent: "center",
     alignItems: "center",
     paddingRight:1  
   }}>
-    <ImageButton buttonHeight={112} buttonWidth={width*.82}
+    <ImageButton onLongPress={()=>{handleAddToCart(specialistDoctors[2])}} onPress={()=>{navigation.navigate("BookingPage", {
+  name:"General Doctors" ,
+  imageSource:require('./assets/GeneralDoctors.png')
+})}} buttonHeight={112} buttonWidth={width*.82}
       text={"General Doctors"} 
       imageSource={require('./assets/GeneralDoctors.png')} 
     />

@@ -14,7 +14,7 @@ const { width } = Dimensions.get('window');
 const ImageButton = ({ 
   imageSource, 
   text, 
-  onPress, 
+  onPress,onLongPress, 
   buttonWidth = width * 0.29,
   buttonHeight = 80,
   overlayOpacity = 0.5 
@@ -22,7 +22,7 @@ const ImageButton = ({
 
   const navigation=useNavigation();
   return (
-    <TouchableOpacity 
+    <TouchableOpacity onLongPress={onLongPress}
       onPress={onPress} 
       activeOpacity={0.8}
       style={[styles.button, { width: buttonWidth, height: buttonHeight }]}
