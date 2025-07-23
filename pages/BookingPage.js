@@ -29,7 +29,7 @@ const BookingPage = () => {
 
   const [name, setName] = useState(userInfo.name || '');
   const [editingName, setEditingName] = useState(!userInfo.name);
-
+  const [showTimePicker, setShowTimePicker] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState(userInfo.phoneNumber || '');
   const [editingPhone, setEditingPhone] = useState(!userInfo.phoneNumber);
 const [showDatePicker, setShowDatePicker] = useState(false);
@@ -74,12 +74,27 @@ const [appointmentDate, setAppointmentDate] = useState(new Date());
   setShowDatePicker(false);
   if (selectedDate) {
     setAppointmentDate(selectedDate);
+    setShowTimePicker(true)
   }
 };
 
+const handleTimeChange = (event, selectedTime) => {
+  setShowTimePicker(false);
+  if (event?.type === 'set' && selectedTime) {
+    const prevDate = new Date(appointmentDate || new Date());
+    const updatedDate = new Date(prevDate);
+
+    updatedDate.setHours(selectedTime.getHours());
+    updatedDate.setMinutes(selectedTime.getMinutes());
+    updatedDate.setSeconds(0);
+    updatedDate.setMilliseconds(0);
+
+    setAppointmentDate(updatedDate);
+  }
+};
 
 const formatDate = (date) => {
-  return date.toLocaleDateString('en-GB');
+  return new Date(date).toLocaleString();
 };
 
 
@@ -257,7 +272,14 @@ console.log(result)
       onChange={handleDateChange}
       minimumDate={new Date()}
     />
-  )}
+  )}  {showTimePicker && (
+        <DateTimePicker
+          mode="time"
+          value={appointmentDate}
+          display="default"
+          onChange={handleTimeChange}
+        />
+      )}
 
   {fieldErrors.appointmentDate && (
     <Text style={{ color: 'red' }}>{fieldErrors.appointmentDate}</Text>
