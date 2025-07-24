@@ -340,7 +340,7 @@ useEffect(() => {
   name:healthcareRoles[0].name ,
   imageSource: healthcareRoles[0].uri
 })}}  text={healthcareRoles[0].name} imageSource={healthcareRoles[0].uri}/>
-<ImageButton onLongPress={()=>{handleAddToCart(healthcareRoles[0])}} onPress={()=>{navigation.navigate("BookingPage", {
+<ImageButton onLongPress={()=>{handleAddToCart(healthcareRoles[1])}} onPress={()=>{navigation.navigate("BookingPage", {
   name:healthcareRoles[1].name ,
   imageSource: healthcareRoles[1].uri
 })}} text={healthcareRoles[1].name} imageSource={healthcareRoles[1].uri}/>
