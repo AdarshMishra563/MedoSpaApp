@@ -136,32 +136,40 @@ if(res.status==200){
       inputs.current[index + 1].focus();
     }
   };
-   const handleVerify =async () => {
-    const enteredOtp = otp.join('');
-    const number="+91"+phonenumber;
-    setmodalerror("");
-    if(enteredOtp.length<6){
-        setmodalerror("Otp must be 6 digits");
-        return
-    }
-   try{    setVerifying(true);
-const res=await axios.post("https://medospabackend.onrender.com/api/verify-otp",{
-
-    phoneNumber:number,otp:enteredOtp
-})
-if(res.status==200){
-
-  dispatch(login(res.data.token))
-navigation.navigate("Dashboard")
-}
-
-   }catch(e){setmodalerror(e.response.data.error);
-   
-   }finally {
-    setVerifying(false); 
-  }
   
-  };
+const handleVerify = async () => {
+  const enteredOtp = otp.join('');
+  const number = "+91" + phonenumber;
+  setmodalerror("");
+  if (enteredOtp.length < 6) {
+    setmodalerror("Otp must be 6 digits");
+    return;
+  }
+  try {
+    setVerifying(true);
+    const res = await axios.post("https://medospabackend.onrender.com/api/verify-otp", {
+      phoneNumber: number,
+      otp: enteredOtp
+    });
+
+    if (res.status === 200) {
+      
+      dispatch(login({
+        token: res.data.token,
+        userInfo: {
+          phoneNumber: number,
+          name: res.data.user?.name || null,
+          picture: res.data.user?.picture || null
+        }
+      }));
+      navigation.navigate("Dashboard");
+    }
+  } catch (e) {
+    setmodalerror(e.response.data.error);
+  } finally {
+    setVerifying(false);
+  }
+};
     const modalTranslateY = useRef(new Animated.Value(300)).current;
   useEffect(() => {
     if (modalVisible) {
@@ -198,31 +206,38 @@ setrequesterror(e.message)
 };
 const [googleloader,setgoogleloader]=useState(false)
 const [googleerror,setgoogleerror]=useState("")
-  const handleGoogleSignIn = async () => {
-    setgoogleerror("")
-     await GoogleSignin.signOut();
-    
-    try {
-      await GoogleSignin.hasPlayServices();
-   setgoogleloader(true)
-     
-      const  idToken  = await GoogleSignin.signIn();
+ const handleGoogleSignIn = async () => {
+  setgoogleerror("");
+  await GoogleSignin.signOut();
+  
+  try {
+    await GoogleSignin.hasPlayServices();
+    setgoogleloader(true);
+    const idToken = await GoogleSignin.signIn();
+    const res = await axios.post("https://medospabackend.onrender.com/auth/google-login", {
+      idToken: idToken?.data?.idToken
+    });
 
-      const res=await axios.post("https://medospabackend.onrender.com/auth/google-login",{
-        idToken:idToken?.data?.idToken
-      })
-
+    if (res.status === 200) {
       
-    if(res.status==200){
-      dispatch(login(res.data.token))
-      navigation.navigate("Dashboard")
+      dispatch(login({
+        token: res.data.token,
+        userInfo: {
+          name: res.data.user?.name || null,
+          email: res.data.user?.email || null,
+          phoneNumber: res.data.user?.phoneNumber || null,
+          picture: res.data.user?.picture || null
+        }
+      }));
+      navigation.navigate("Dashboard");
     }
-     
-    } catch (error) {
-    const errormsg=error.response.data.message?error.response.data.message:error.message;
+  } catch (error) {
+    const errormsg = error.response.data.message ? error.response.data.message : error.message;
     setgoogleerror(errormsg);
-    }finally{setgoogleloader(false)}
-  };
+  } finally {
+    setgoogleloader(false);
+  }
+};
   return (
     <View style={{backgroundColor:"#f0f0f0",height:height,marginTop:statusbarheight}}>
       <StatusBar barStyle="dark-content" backgroundColor="#f0f0f0" />

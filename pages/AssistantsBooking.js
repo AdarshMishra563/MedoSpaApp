@@ -122,11 +122,11 @@ const AssistantCard = ({ item, index, navigation, addToCart,setErrorPopup }) => 
 const GeneralDutyAssistantsPage = () => {
      const [errorPopup,setErrorPopup]=useState(null);
   const navigation = useNavigation();
-  const { addToCart, cartItems } = useCart(); // Get cart functions and state
+  const { addToCart, cartItems } = useCart(); 
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#f0f0f0' }}>
-            {errorPopup && <ErrorPopup message='Added to cart' Color='green' onHide={()=>{setErrorPopup(null)}}/>}
+            {errorPopup && <ErrorPopup message='Added to Treatment Bag' Color='green' onHide={()=>{setErrorPopup(null)}}/>}
       <ScrollView style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()}>

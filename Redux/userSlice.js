@@ -5,26 +5,40 @@ const userSlice = createSlice({
   initialState: {
     isLoggedIn: false,
     userToken: null,
-      userInfo: {
+    userInfo: {
       name: null,
       phoneNumber: null,
-      picture:null
+      email: null,
+      picture: null
     },
-     location: {
-      coords: null,     
-      address: null,      
-      lastUpdated: null   
+    location: {
+      coords: null,
+      address: null,
+      lastUpdated: null
     },
   },
   reducers: {
     login(state, action) {
       state.isLoggedIn = true;
-      state.userToken = action.payload;
+      state.userToken = action.payload.token;
+      if (action.payload.userInfo) {
+        state.userInfo = {
+          ...state.userInfo,
+          ...action.payload.userInfo
+        };
+      }
     },
     logout(state) {
       state.isLoggedIn = false;
       state.userToken = null;
-    }, updateLocation(state, action) {
+      state.userInfo = {
+        name: null,
+        phoneNumber: null,
+        email: null,
+        picture: null
+      };
+    },
+    updateLocation(state, action) {
       state.location = {
         coords: action.payload.coords,
         address: action.payload.address,
@@ -37,21 +51,21 @@ const userSlice = createSlice({
         address: null,
         lastUpdated: null
       };
-    },    updateUserInfo(state, action) {
+    },
+    updateUserInfo(state, action) {
       state.userInfo = {
-        name: action.payload.name,
-        phoneNumber: action.payload.phoneNumber,
-        picture:action.payload.picture
+        ...state.userInfo,
+        ...action.payload
       };
     },
     clearUserInfo(state) {
       state.userInfo = {
         name: null,
         phoneNumber: null,
-        picture:null
+        email: null,
+        picture: null
       };
     },
-
   }
 });
 

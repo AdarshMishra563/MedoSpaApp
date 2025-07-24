@@ -208,7 +208,7 @@ useEffect(() => {
             marginBottom: 3,
             resizeMode: "contain"
           }}
-        /> {errorPopup && <ErrorPopup message='Added to cart' Color='green' onHide={()=>{setErrorPopup(null)}}/>}
+        /> {errorPopup && <ErrorPopup message='Added to Treatment bag' Color='green' onHide={()=>{setErrorPopup(null)}}/>}
         {texts.map((word, index) => (
           <View key={index} style={{ flexDirection: "column" }}>
             <Text style={{ fontSize: 32, fontWeight: '500', color: 'gray', padding: 2 }}>

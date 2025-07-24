@@ -111,7 +111,7 @@ const { addToCart } = useCart();
     <SafeAreaView style={{ flex: 1, backgroundColor: '#f0f0f0' }}>
         
       <ScrollView style={styles.container}>
-              {errorPopup&& <ErrorPopup message="Added to cart" Color='green' onHide={()=>{setErrorPopup(null)}}/>}
+              {errorPopup&& <ErrorPopup message="Added to Treatment Bag" Color='green' onHide={()=>{setErrorPopup(null)}}/>}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <MaterialCommunityIcons name="arrow-left" size={26} color="#333" />

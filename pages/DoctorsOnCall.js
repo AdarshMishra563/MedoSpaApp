@@ -115,7 +115,7 @@ const [errorpopup,seterroerpopup]=useState(null)
       }
       console.log(result)
 
-    seterroerpopup("Success")
+    seterroerpopup("Successfully Booked")
       setSelectedService(null);
     } catch (err) {
       Alert.alert('Error', 'Failed to connect to the server.');
@@ -145,7 +145,7 @@ console.log(service)
       duration: service.duration,
       imageSource: service.imageSource 
     });
-    setErrorPopup("Added to Cart");
+    setErrorPopup("Added to Treatment Bag");
     } catch (error) {
       Alert.alert('Error', 'Failed to add to cart');
     }
@@ -240,7 +240,7 @@ console.log(service)
 
   return (
     <SafeAreaView style={{flex:1,backgroundColor:"#f6f5f5ff"}}>
-     { errorPopup && <ErrorPopup message='Added to cart' Color='green' onHide={()=>{setErrorPopup(null)}}/>}
+     { errorPopup && <ErrorPopup message='Added to Treatment Bag' Color='green' onHide={()=>{setErrorPopup(null)}}/>}
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#f6f5f5ff" />
       {errorpopup && <ErrorPopup message={errorpopup} Color="green" onHide={() => seterroerpopup(null)} />}

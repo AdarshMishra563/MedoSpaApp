@@ -35,7 +35,7 @@ const CartScreen = () => {
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <MaterialCommunityIcons name="arrow-left" size={26} color="#333" />
         </TouchableOpacity>
-        <Text style={styles.title}>Your Cart</Text>
+        <Text style={styles.title}>Treatment Bag</Text>
         {cartItems.length > 0 && (
           <TouchableOpacity onPress={clearCart}>
             <Text style={styles.clearText}>Clear All</Text>

@@ -45,7 +45,7 @@ const handleUserInfoUpdate = (dispatch, { name, phoneNumber,picture }) => {
     isValidPhone = phoneNumber.length === 10 && /^\d+$/.test(phoneNumber);
   }
 
-  const finalName = name?.trim() ? name : null;
+  const finalName = name;
 
   if (isValidPhone || finalName) {
     dispatch(updateUserInfo({
@@ -78,6 +78,8 @@ if(token){
 fetch();
 
 }else{
+          dispatch(clearUserInfo());
+
 navigation.navigate("Login")
 
 }

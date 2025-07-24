@@ -17,6 +17,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import ErrorPopup from './ErrorPopup';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import UpiPayment from './Payment';
 
 const { width } = Dimensions.get('window');
 

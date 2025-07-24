@@ -19,6 +19,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import ErrorPopup from './ErrorPopup';
 
 const BookingsScreen = () => {
   const [bookings, setBookings] = useState([]);
@@ -30,6 +31,8 @@ const BookingsScreen = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
+  const [errorpopup,setErrorPopup]=useState(null);
+
   const [editForm, setEditForm] = useState({
     appointmentDate: new Date(),
     serviceType: 'home',
@@ -146,7 +149,7 @@ const location= useSelector(state => state.user.location);
 
       if (!response.ok) throw new Error('Failed to update booking');
       
-      Alert.alert('Success', 'Booking updated successfully');
+      setErrorPopup("Booking updated successfully")
       setShowEditModal(false);
       fetchBookings();
     } catch (error) {
@@ -162,7 +165,7 @@ const location= useSelector(state => state.user.location);
   setShowDatePicker(false);
   if (selectedDate) {
     setEditForm({ ...editForm, appointmentDate: selectedDate });
-    setShowTimePicker(true); // Only open time picker if date was selected
+    setShowTimePicker(true); 
   }
 };
 
@@ -300,7 +303,7 @@ const onTimeChange = (event, selectedTime) => {
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.header}>Your Bookings</Text>
-      
+        {errorpopup&& <ErrorPopup message={errorpopup} Color='green' onHide={()=>{setErrorPopup(null)}}/>}
       <View style={styles.tabContainer}>
         <TouchableOpacity 
           style={[
