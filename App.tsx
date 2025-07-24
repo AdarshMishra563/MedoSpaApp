@@ -26,6 +26,7 @@ import GeneralDutyAssistantsPage from './pages/AssistantsBooking';
 import ServicesList from './pages/Appointment';
 import CartScreen from './pages/CartScreen';
 import { MenuProvider } from 'react-native-popup-menu';
+import PastBookingsScreen from './pages/PastBookings';
 
 
 const Stack = createNativeStackNavigator();
@@ -184,6 +185,7 @@ navigation.navigate("Login")
 <Stack.Screen name='AssistantsBooking' component={GeneralDutyAssistantsPage}/>
 <Stack.Screen name='Appointment' component={ServicesList}/>
 <Stack.Screen name='Cart' component={CartScreen}/>
+<Stack.Screen name='PastBookings' component={PastBookingsScreen}/>
       
     </Stack.Navigator></NavigationContainer></MenuProvider>
   )
@@ -195,7 +197,7 @@ export default function App(){
   return (
       <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
-        <LocationTracker/>
+        <LocationTracker/> 
         <Main />
       </PersistGate>
     </Provider>

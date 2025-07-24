@@ -221,7 +221,7 @@ const onTimeChange = (event, selectedTime) => {
         <View style={styles.serviceInfo}>
           <View style={styles.statusBadge}>
             <Text style={[styles.statusText, getStatusStyle(item.status)]}>
-              {item.status.toUpperCase()}
+              {item.status==='active'?"PENDING":item.status.toUpperCase()}
             </Text>
           </View>
           <Text style={styles.serviceFor}>Booking for: {item.serviceFor}</Text>
@@ -290,6 +290,7 @@ const onTimeChange = (event, selectedTime) => {
           />
         </View>
       </View>
+     
     </View>
     
     {processing && selectedBooking?._id === item._id && (
