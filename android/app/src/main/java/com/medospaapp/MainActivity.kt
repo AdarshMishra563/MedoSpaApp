@@ -1,22 +1,25 @@
 package com.medospaapp
 
+import android.os.Bundle
 import com.facebook.react.ReactActivity
+import android.os.Handler
+import android.os.Looper
 import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
 import com.facebook.react.defaults.DefaultReactActivityDelegate
 
 class MainActivity : ReactActivity() {
 
-  /**
-   * Returns the name of the main component registered from JavaScript. This is used to schedule
-   * rendering of the component.
-   */
+  override fun onCreate(savedInstanceState: Bundle?) {
+    // Set the app theme *before* super.onCreate to apply splash screen
+    setTheme(R.style.AppTheme) // AppTheme defined in styles.xml
+    Handler(Looper.getMainLooper()).postDelayed({
+      super.onCreate(savedInstanceState)
+    }, 1600)
+  }
+
   override fun getMainComponentName(): String = "MedoSpaApp"
 
-  /**
-   * Returns the instance of the [ReactActivityDelegate]. We use [DefaultReactActivityDelegate]
-   * which allows you to enable New Architecture with a single boolean flags [fabricEnabled]
-   */
   override fun createReactActivityDelegate(): ReactActivityDelegate =
-      DefaultReactActivityDelegate(this, mainComponentName, fabricEnabled)
+    DefaultReactActivityDelegate(this, mainComponentName, fabricEnabled)
 }

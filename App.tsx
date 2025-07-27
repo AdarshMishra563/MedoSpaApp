@@ -1,8 +1,10 @@
-import { View, Text } from 'react-native'
+import { View, Text, Platform, Vibration } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { NavigationContainer, useNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-
+import messaging from '@react-native-firebase/messaging';
+import { Alert, AppState } from 'react-native';
+import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import { Image } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Dashboard from './pages/dashboard';
@@ -27,15 +29,20 @@ import ServicesList from './pages/Appointment';
 import CartScreen from './pages/CartScreen';
 import { MenuProvider } from 'react-native-popup-menu';
 import PastBookingsScreen from './pages/PastBookings';
+import ErrorPopup from './pages/ErrorPopup';
+import NotificationPopup from './pages/NotificationPopup';
+import NotificationScreen from './pages/NotificationPage';
+import FeedbackScreen from './pages/FeedbackScreen';
 
 
 const Stack = createNativeStackNavigator();
 const Tab=createBottomTabNavigator();
 const TabNavigator=()=>{
-const [image,setimage]=useState("");
+
 const navigation=useNavigation();
 const token=useSelector(state=>state?.user?.userToken);
-
+const userpicture=useSelector(state=>state?.user?.userInfo?.picture);
+const [image,setimage]=useState(userpicture);
 const dispatch=useDispatch();
 const handleUserInfoUpdate = (dispatch, { name, phoneNumber,picture }) => {
   let isValidPhone = false;
@@ -186,18 +193,58 @@ navigation.navigate("Login")
 <Stack.Screen name='Appointment' component={ServicesList}/>
 <Stack.Screen name='Cart' component={CartScreen}/>
 <Stack.Screen name='PastBookings' component={PastBookingsScreen}/>
+<Stack.Screen name='NotificationPage' component={NotificationScreen}/>
+<Stack.Screen name='FeedbackScreen' component={FeedbackScreen}/>
       
     </Stack.Navigator></NavigationContainer></MenuProvider>
   )
 }
 export default function App(){
+const [error,setError]=useState(null)
+useEffect(() => {
+  const unsubscribe = messaging().onMessage(async remoteMessage => {
+    setError(remoteMessage?.notification?.body);
+   Vibration.vibrate([0, 200, 200, 200]);
+  });
 
+  return unsubscribe;
+}, []);
+useEffect(() => {
+  const requestPermission = async () => {
+    try {
+      if (Platform.OS === 'ios') {
+        const authStatus = await messaging().requestPermission();
+        const enabled =
+          authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+          authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+        console.log(enabled ? '✅ iOS permission granted.' : '🚫 iOS permission denied.');
+      } else if (Platform.OS === 'android') {
+        if (Platform.Version >= 33) {
+          const result = await request(PERMISSIONS.ANDROID.POST_NOTIFICATIONS);
+          if (result === RESULTS.GRANTED) {
+            console.log('✅ Android permission granted.');
+          } else if (result === RESULTS.DENIED) {
+            console.warn('🚫 Android permission denied (user can be asked again).');
+          } else if (result === RESULTS.BLOCKED) {
+            console.error('❌ Android permission permanently blocked. Go to settings.');
+          }
+        } else {
+          console.log('✅ No runtime notification permission required for Android < 13');
+        }
+      }
+    } catch (error) {
+      console.error('Permission request error:', error);
+    }
+  };
 
+  requestPermission();
+}, []);
 
   return (
       <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
-        <LocationTracker/> 
+        
+        {error && <NotificationPopup message={error} Color='green'   onHide={() => setError(null)}/>}
         <Main />
       </PersistGate>
     </Provider>

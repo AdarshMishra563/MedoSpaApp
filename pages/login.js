@@ -10,6 +10,7 @@ import { firebase } from '@react-native-firebase/auth';
 import { findPackageJSON } from 'module';
 import { useDispatch } from 'react-redux';
 import { login } from '../Redux/userSlice';
+import { getAndSendFcmToken } from './getAndsendfcmToken';
 
 const statusbarheight=Platform.OS==='android'?StatusBar.currentHeight:0;
 export default function Login() {
@@ -162,6 +163,7 @@ const handleVerify = async () => {
           picture: res.data.user?.picture || null
         }
       }));
+      
       navigation.navigate("Dashboard");
     }
   } catch (e) {
@@ -229,6 +231,9 @@ const [googleerror,setgoogleerror]=useState("")
           picture: res.data.user?.picture || null
         }
       }));
+
+ 
+
       navigation.navigate("Dashboard");
     }
   } catch (error) {

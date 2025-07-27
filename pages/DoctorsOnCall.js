@@ -56,7 +56,7 @@ const HomeServicesScreen = () => {
   const [isHomeService, setIsHomeService] = useState(false);
 const [errorpopup,seterroerpopup]=useState(null)
   const handleCallNow = () => {
-    const phoneNumber = '+916393137253';
+    const phoneNumber = '+919220783636';
     Linking.openURL(`tel:${phoneNumber}`);
   };
 

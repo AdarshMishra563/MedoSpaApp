@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, StatusBar, Image, Platform, ScrollView, Dimensions, Animated, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StatusBar, Image, Platform, ScrollView, Dimensions, Animated, StyleSheet, PermissionsAndroid, Linking } from 'react-native';
 import { useSelector } from 'react-redux';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
@@ -7,10 +7,15 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import DeviceInfo from 'react-native-device-info';
 import ImageButton from './Button';
 import NewIcon from 'react-native-vector-icons/FontAwesome';
-
+import messaging from '@react-native-firebase/messaging';
 import { SvgXml } from 'react-native-svg';
 import { useCart } from './useCart';
 import ErrorPopup from './ErrorPopup';
+import axios from 'axios';
+import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
+import { getAndSendFcmToken } from './getAndsendfcmToken';
+import NotificationBell from './NotificatioBell';
+import LocationTracker from './LocationTracker';
 const { width, height } = Dimensions.get('window');
 
 const medicalBagSvg = `
@@ -21,6 +26,7 @@ const medicalBagSvg = `
 </svg>
 
 `;
+
 
 const images = [
   { id: '1', uri: require('./assets/12.png') },
@@ -138,12 +144,13 @@ export default function Home() {
        const [errorPopup,setErrorPopup]=useState(null);
   const scrollX = useRef(new Animated.Value(0)).current;
   const texts = ['M', 'e', 'd', 'o', 'S', 'p', 'a'];
-const [key,setkey]=useState(0)
+const [key,setkey]=useState(0);
+const token=useSelector(state=>state.user.userToken);
    const { addToCart, cartItems } = useCart();
   const CARD_WIDTH = width * 0.9; 
   const CARD_MARGIN = width * 0.02; 
   const PEEK_WIDTH = (width - CARD_WIDTH) / 2; 
-useEffect(()=>{setTimeout(()=>{setkey(prev=>prev+1)},100)},[])
+
   useFocusEffect(() => {
     StatusBar.setBarStyle('dark-content');
     if (Platform.OS === 'android') {
@@ -194,7 +201,34 @@ useEffect(() => {
       Alert.alert('Error', 'Failed to add to cart');
     }
   };
+useEffect(()=>{
 
+
+  if(token){getAndSendFcmToken(token)
+
+    
+  }
+},[]);
+const requestPermission = async () => {
+  if (Platform.OS === 'android' && Platform.Version >= 33) {
+    const granted = await PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
+    );
+
+    if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+      console.log('✅ Notification permission granted');
+    } else {
+      console.warn('🚫 Notification permission denied');
+    }
+  }
+};
+useEffect(() => {
+  const timeout = setTimeout(() => {
+    requestPermission();
+  }, 10000);
+
+  return () => clearTimeout(timeout); 
+}, []);
   return (
     <SafeAreaView edges={['top', 'left', 'right']}  style={{ flex: 1, backgroundColor: "#e1dfdfff", }}>
        <StatusBar barStyle="dark-content" backgroundColor="#e1dfdfff" />
@@ -216,9 +250,20 @@ useEffect(() => {
             </Text>
           </View>
         ))}
-       <TouchableOpacity 
+        
+         <View
   style={{ 
     marginLeft: 'auto', 
+    padding: 4,
+    position: 'relative' 
+  }} 
+
+><NotificationBell/>
+ 
+</View>
+       <TouchableOpacity 
+  style={{ 
+    marginLeft: 2, 
     padding: 8,
     position: 'relative' 
   }} 
@@ -248,7 +293,7 @@ useEffect(() => {
   )}
 </TouchableOpacity>
       </View>
-
+<LocationTracker/> 
       <ScrollView  contentContainerStyle={{ paddingBottom: 60 }} showsVerticalScrollIndicator={false} style={{ flex: 1, backgroundColor: "#f6f5f5ff" }}>
          
         <View style={{ marginTop: 28, justifyContent: "center", alignItems: "center" }}>
@@ -568,6 +613,14 @@ useEffect(() => {
               justifyContent: 'center',
               backgroundColor: 'transparent',
             }}
+                onPress={() => {
+                  const phoneNumber = '+919220783636';
+      const url = `tel:${phoneNumber}`;
+      Linking.openURL(url).catch(err =>
+        console.error('Failed to open dialer:', err)
+      );
+    }}
+
           >
             <Icon name="phone" size={20} color="#333" />
           </TouchableOpacity>
@@ -584,6 +637,7 @@ useEffect(() => {
               justifyContent: 'center',
               backgroundColor: 'transparent',
             }}
+            onPress={()=>{navigation.navigate('FeedbackScreen')}}
           >
             <Icon name="message" size={20} color="#333" />
           </TouchableOpacity>

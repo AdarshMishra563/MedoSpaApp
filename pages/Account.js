@@ -24,6 +24,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { clearUserInfo, logout } from '../Redux/userSlice';
+import messaging from '@react-native-firebase/messaging';
+
+
 
 const {width,height}=Dimensions.get("window")
 export default function Account() {
@@ -257,7 +260,9 @@ const settingsList = [
         ))}
       </View>
  </View>
-<TouchableOpacity style={styles.button3} onPress={()=>{       dispatch(clearUserInfo());dispatch(logout()); 
+<TouchableOpacity style={styles.button3} onPress={()=>{
+  
+  dispatch(clearUserInfo());dispatch(logout());  messaging().deleteToken();
 navigation.navigate("Login")}}>
       <NewIcon name="logout" size={22} color="white" />
       <Text style={styles.text4}>Logout</Text>

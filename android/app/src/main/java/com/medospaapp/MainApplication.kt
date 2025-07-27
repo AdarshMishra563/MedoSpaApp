@@ -9,6 +9,12 @@ import com.facebook.react.ReactNativeHost
 import com.facebook.react.ReactPackage
 import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
 import com.facebook.react.defaults.DefaultReactNativeHost
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.os.Build
+
+import androidx.core.app.NotificationManagerCompat
+import com.facebook.soloader.SoLoader
 
 class MainApplication : Application(), ReactApplication {
 
@@ -34,5 +40,16 @@ class MainApplication : Application(), ReactApplication {
   override fun onCreate() {
     super.onCreate()
     loadReactNative(this)
+     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        val channel = NotificationChannel(
+            "default_channel_id",
+            "Default Channel",
+            NotificationManager.IMPORTANCE_DEFAULT
+        ).apply {
+            description = "Used for Firebase Push"
+        }
+        val manager = getSystemService(NotificationManager::class.java)
+        manager.createNotificationChannel(channel)
+    }
   }
 }
