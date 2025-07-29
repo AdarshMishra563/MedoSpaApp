@@ -1,6 +1,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 
-const API_BASE_URL = 'https://your-api-endpoint.com/api';
+const API_BASE_URL = 'https:///api';
 
 export const syncCartWithServer = createAsyncThunk(
   'cart/syncCart',
