@@ -152,20 +152,22 @@ const handleVerify = async () => {
       phoneNumber: number,
       otp: enteredOtp
     });
-
-    if (res.status === 200) {
-      
-      dispatch(login({
-        token: res.data.token,
-        userInfo: {
-          phoneNumber: number,
-          name: res.data.user?.name || null,
-          picture: res.data.user?.picture || null
-        }
-      }));
-      
-      navigation.navigate("Dashboard");
+if (res.status === 200) {
+  dispatch(login({
+    token: res.data.token,
+    userInfo: {
+      phoneNumber: number,
+      name: res.data.user?.name || null,
+      picture: res.data.user?.picture || null
     }
+  }));
+
+  if (res.data.admin) {
+    navigation.navigate('AdminPage');
+  } else {
+    navigation.navigate("Dashboard");
+  }
+}
   } catch (e) {
     setmodalerror(e.response.data.error);
   } finally {

@@ -33,6 +33,7 @@ import ErrorPopup from './pages/ErrorPopup';
 import NotificationPopup from './pages/NotificationPopup';
 import NotificationScreen from './pages/NotificationPage';
 import FeedbackScreen from './pages/FeedbackScreen';
+import AdminBookingsScreen from './pages/Adminscreen';
 
 
 const Stack = createNativeStackNavigator();
@@ -195,7 +196,7 @@ navigation.navigate("Login")
 <Stack.Screen name='PastBookings' component={PastBookingsScreen}/>
 <Stack.Screen name='NotificationPage' component={NotificationScreen}/>
 <Stack.Screen name='FeedbackScreen' component={FeedbackScreen}/>
-      
+      <Stack.Screen name='AdminPage' component={AdminBookingsScreen}/>
     </Stack.Navigator></NavigationContainer></MenuProvider>
   )
 }

@@ -129,9 +129,9 @@ const settingsList = [
   {name:"Completed Transactions",icon:"payments",screen:"PastTransactions"},
    { name: 'My Plans', icon: 'event-note', screen: 'PlansScreen' },
    { name: 'Manage addresses', icon: 'location-on', screen: 'Location' },
-  { name: 'Manage payment methods', icon: 'payment', screen: 'PaymentScreen' },
+  { name: 'Treatment Bag', icon: 'shopping-bag', screen: 'Cart' },
   
-  { name: 'Wallet', icon: 'account-balance-wallet', screen: 'WalletScreen' },
+  { name: 'Notifications', icon: 'notifications-none', screen: 'NotificationPage' },
   { name: 'Settings', icon: 'settings', screen: 'SettingsScreen' },
     { name: 'Refer', icon: 'star-border', screen: 'ReferScreen' },
   

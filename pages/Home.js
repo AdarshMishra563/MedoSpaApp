@@ -519,6 +519,7 @@ useEffect(() => {
             borderWidth: 0.4,
             borderColor: '#005B9F',
           }}
+          onPress={()=>{navigation.navigate('PlansScreen')}}
         >
           <Text style={{ color: '#fff', fontWeight: '600' }}>Get</Text>
         </TouchableOpacity>
