@@ -9,7 +9,8 @@ const userSlice = createSlice({
       name: null,
       phoneNumber: null,
       email: null,
-      picture: null
+      picture: null,
+      admin:false
     },
     location: {
       coords: null,
@@ -24,7 +25,8 @@ const userSlice = createSlice({
       if (action.payload.userInfo) {
         state.userInfo = {
           ...state.userInfo,
-          ...action.payload.userInfo
+          ...action.payload.userInfo,
+            admin: action.payload.admin || false
         };
       }
     },

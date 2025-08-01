@@ -177,12 +177,16 @@ navigation.navigate("Login")
 
 
   const token=useSelector(state=>state?.user?.userToken);
+const isAdmin = useSelector(state => state?.user?.userInfo.admin);
+    const getInitialRoute = () => {
+    if (!token) return 'Login';
+    return isAdmin ? 'AdminPage' : 'Dashboard';
+  };
 
-  
   return (
     <MenuProvider>
     <NavigationContainer>
-    <Stack.Navigator  initialRouteName={token?"Dashboard":"Login"} screenOptions={{headerShown:false}}>
+    <Stack.Navigator   initialRouteName={getInitialRoute()}  screenOptions={{headerShown:false}}>
 <Stack.Screen name='Login' component={Login}/>
 <Stack.Screen name='Dashboard' component={TabNavigator}/>
 <Stack.Screen name='Location' component={LocationScreen}/>

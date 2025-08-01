@@ -146,6 +146,7 @@ export default function Home() {
   const texts = ['M', 'e', 'd', 'o', 'S', 'p', 'a'];
 const [key,setkey]=useState(0);
 const token=useSelector(state=>state.user.userToken);
+const isAdmin = useSelector(state => state.user.userInfo.admin);
    const { addToCart, cartItems } = useCart();
   const CARD_WIDTH = width * 0.9; 
   const CARD_MARGIN = width * 0.02; 

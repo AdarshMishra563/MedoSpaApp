@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, RefreshControl, Linking } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
@@ -7,7 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 const API_URL = 'https://medospabackend.onrender.com/api';
 
-const BookingItem = ({ booking, onAccept, onCancel, onDateChange, isEditable }) => {
+const BookingItem = ({ booking, onAccept, onCancel, onDateChange, isEditable, onComplete, showCompletionButtons }) => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [appointmentDate, setAppointmentDate] = useState(new Date(booking.appointmentDate));
@@ -31,10 +31,15 @@ const BookingItem = ({ booking, onAccept, onCancel, onDateChange, isEditable }) 
   };
 
   const openGoogleMaps = () => {
-    if (booking?.location?.address) {
-      const query = encodeURIComponent(booking.location.address);
-      const url = `https://www.google.com/maps/search/?api=1&query=${query}`;
-      Linking.openURL(url);
+    if (booking?.location?.coords) {
+      const { latitude, longitude } = booking.location.coords;
+      const url = `geo:${latitude},${longitude}?q=${latitude},${longitude}`;
+      
+      Linking.openURL(url).catch(err => {
+        console.error("Failed to open native maps, falling back to web URL:", err);
+        const webUrl = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
+        Linking.openURL(webUrl);
+      });
     }
   };
 
@@ -96,12 +101,25 @@ const BookingItem = ({ booking, onAccept, onCancel, onDateChange, isEditable }) 
           </View>
         </>
       )}
+
+      {showCompletionButtons && (
+        <View style={styles.completionButtons}>
+          <TouchableOpacity onPress={onComplete} style={styles.completeButton}>
+            <Text style={styles.completeText}>Mark Completed</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={onCancel} style={styles.cancelButton}>
+            <Text style={styles.cancelText}>Cancel Booking</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 };
 
 const BookingsList = ({ statusFilter }) => {
   const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const token = useSelector(state => state.user.userToken);
 
   const fetchBookings = async () => {
@@ -112,18 +130,40 @@ const BookingsList = ({ statusFilter }) => {
       setBookings(res.data.bookings);
     } catch (err) {
       console.error(err);
+      Alert.alert('Error', 'Failed to fetch bookings');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
     }
   };
 
   useEffect(() => {
-    const timer=setInterval(()=>{fetchBookings();},20000);
-    return ()=>clearInterval(timer)
+    const timer = setInterval(() => {
+      fetchBookings();
+    }, 20000);
+    fetchBookings();
+    return () => clearInterval(timer);
   }, [statusFilter]);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchBookings();
+  };
 
   const notifyUser = async (booking, status, appointmentDate) => {
     try {
-      const title = status === 'confirmed' ? 'Booking Confirmed' : " Booking Cancelled";
-      const message = status==='confirmed'?`Your appointment is scheduled for ${new Date(appointmentDate).toLocaleString()}`:"Booking cancelled due to some reasons";
+      const title = status === 'confirmed' 
+        ? 'Booking Confirmed' 
+        : status === 'completed' 
+          ? 'Treatment Completed' 
+          : 'Booking Cancelled';
+      
+      const message = status === 'confirmed'
+        ? `Your appointment is scheduled for ${new Date(appointmentDate).toLocaleString()}`
+        : status === 'completed'
+          ? `Your ${booking.serviceFor} service has been successfully completed`
+          : 'Booking cancelled due to some reasons';
+      
       await axios.post(`${API_URL}/createNotification`, {
         userId: booking.user,
         message,
@@ -141,21 +181,28 @@ const BookingsList = ({ statusFilter }) => {
       const updatedDate = date || booking.appointmentDate;
       const body = {
         userId: booking.userId,
-        message: booking.message,
+        message: booking?.message,
         appointmentDate: updatedDate,
-        title: booking.title,
+        title: booking?.title,
         status,
       };
-      if (status === 'confirmed' || status === 'cancelled') {
+      
+      if (status === 'confirmed' || status === 'cancelled' || status === 'completed') {
         delete body.message;
         delete body.title;
       }
-      await axios.put(`${API_URL}/admin/bookings/${id}`, body, { headers: { Authorization: `Bearer ${token}` } });
+      
+      await axios.put(`${API_URL}/admin/bookings/${id}`, body, { 
+        headers: { Authorization: `Bearer ${token}` } 
+      });
+       if (status !== booking.status) {
       await notifyUser(booking, status, updatedDate);
+    }
+    
       Alert.alert(`Booking ${status}`);
       fetchBookings();
     } catch (e) {
-      Alert.alert('Error updating booking');
+      Alert.alert('Error', 'Failed to update booking');
     }
   };
 
@@ -169,15 +216,30 @@ const BookingsList = ({ statusFilter }) => {
       case 'active': return b.status === 'active';
       case 'confirmed': return b.status === 'confirmed';
       case 'cancelled': return b.status === 'cancelled' && diffHours < 12;
-      case 'completed': return b.status !== 'cancelled' && isPastAppt;
+      case 'ongoing': return (b.status === 'confirmed' && isPastAppt) ;
+      case 'completed': return b.status === 'completed';
       default: return false;
     }
   });
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
+  }
 
   return (
     <FlatList
       data={filtered}
       keyExtractor={item => item._id}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+        />
+      }
       renderItem={({ item }) => (
         <BookingItem
           booking={item}
@@ -185,8 +247,15 @@ const BookingsList = ({ statusFilter }) => {
           onDateChange={date => handleUpdate(item._id, item.status, date)}
           onAccept={() => handleUpdate(item._id, 'confirmed')}
           onCancel={() => handleUpdate(item._id, 'cancelled')}
+          onComplete={() => handleUpdate(item._id, 'completed')}
+          showCompletionButtons={statusFilter === 'ongoing' && item.status === 'confirmed'}
         />
       )}
+      ListEmptyComponent={
+        <View style={styles.emptyContainer}>
+          <Text>No bookings found</Text>
+        </View>
+      }
     />
   );
 };
@@ -197,7 +266,8 @@ const AdminBookingsScreen = () => {
     { label: 'New Bookings', value: 'active' },
     { label: 'Confirmed', value: 'confirmed' },
     { label: 'Cancelled', value: 'cancelled' },
-    { label: 'Ongoing', value: 'completed' },
+    { label: 'Ongoing', value: 'ongoing' },
+    { label: 'Completed', value: 'completed' },
   ];
 
   return (
@@ -245,6 +315,33 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     marginTop: 10
   },
+  completionButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 10
+  },
+  completeButton: {
+    backgroundColor: '#4CAF50',
+    padding: 8,
+    borderRadius: 4,
+    flex: 1,
+    marginRight: 5
+  },
+  cancelButton: {
+    backgroundColor: '#F44336',
+    padding: 8,
+    borderRadius: 4,
+    flex: 1,
+    marginLeft: 5
+  },
+  completeText: {
+    color: 'white',
+    textAlign: 'center'
+  },
+  cancelText: {
+    color: 'white',
+    textAlign: 'center'
+  },
   accept: {
     color: 'green'
   },
@@ -272,6 +369,17 @@ const styles = StyleSheet.create({
   activeTabText: {
     color: '#007bff',
     fontWeight: 'bold'
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 50
   }
 });
 

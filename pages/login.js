@@ -159,10 +159,11 @@ if (res.status === 200) {
       phoneNumber: number,
       name: res.data.user?.name || null,
       picture: res.data.user?.picture || null
-    }
+    },admin: res.data.admin
   }));
 
   if (res.data.admin) {
+
     navigation.navigate('AdminPage');
   } else {
     navigation.navigate("Dashboard");
