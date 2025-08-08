@@ -177,7 +177,7 @@ navigation.navigate("Login")
 
 
   const token=useSelector(state=>state?.user?.userToken);
-const isAdmin = useSelector(state => state?.user?.userInfo.admin);
+const isAdmin = useSelector(state => state?.user?.userInfo?.admin);
     const getInitialRoute = () => {
     if (!token) return 'Login';
     return isAdmin ? 'AdminPage' : 'Dashboard';
