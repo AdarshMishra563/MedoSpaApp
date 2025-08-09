@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -41,12 +41,18 @@ const ChatSupportScreen = ({ navigation }) => {
   const [selectedBookingForChat, setSelectedBookingForChat] = useState(null);
   const [messageStatus, setMessageStatus] = useState({});
   const flatListRef = useRef(null);
-
-  // Fetch user's bookings
-  const fetchBookings = async () => {
+  const refreshIntervalRef = useRef(null);
+const currentChatRef = useRef(currentChat);
+  // Memoized API endpoints
+  const memoizedEndpoints = useMemo(() => API_ENDPOINTS, []);
+useEffect(() => {
+  currentChatRef.current = currentChat;
+}, [currentChat]);
+  // Fetch bookings with useCallback
+  const fetchBookings = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch(API_ENDPOINTS.getBookings, {
+      const response = await fetch(memoizedEndpoints.getBookings, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -70,13 +76,13 @@ const ChatSupportScreen = ({ navigation }) => {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, [token, memoizedEndpoints]);
 
- 
-  const fetchChats = async () => {
+  // Fetch chats with useCallback
+  const fetchChats = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch(API_ENDPOINTS.getUserChats, {
+      const response = await fetch(memoizedEndpoints.getUserChats, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -90,18 +96,20 @@ const ChatSupportScreen = ({ navigation }) => {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, [token, memoizedEndpoints]);
 
-  // Load a specific chat with messages
-  const loadChat = async (chat) => {
+  // Load chat with useCallback
+  const loadChat = useCallback(async (chat) => {
     try {
-      setCurrentChat({
-        token: chat.token,
-        serviceType: chat.serviceType,
-        status: chat.status
-      });
-      
-      const response = await fetch(API_ENDPOINTS.getChatMessages(chat.token), {
+      const newChat = {
+      token: chat.token,
+      serviceType: chat.serviceType,
+      status: chat.status
+    };
+    
+    setCurrentChat(newChat);
+    currentChatRef.current = newChat;
+      const response = await fetch(memoizedEndpoints.getChatMessages(chat.token), {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -110,19 +118,44 @@ const ChatSupportScreen = ({ navigation }) => {
       const data = await response.json();
       setMessages(data.messages || []);
       setActiveView('chat');
+      
+      // Start refresh interval for this chat
+      if (refreshIntervalRef.current) {
+        clearInterval(refreshIntervalRef.current);
+      }
+      
+      refreshIntervalRef.current = setInterval(() => {
+        refreshCurrentChat();
+      }, 10000); // Refresh every 10 seconds
     } catch (err) {
       console.error('Error loading chat:', err);
     }
-  };
-useEffect(()=>{setInterval(()=>{loadChat(currentChat)},8000);
+  }, [token, memoizedEndpoints]);
 
+  
+  const refreshCurrentChat = useCallback(async () => {
+   console.log("refreshed")
+      const currentChat = currentChatRef.current;
+        if (!currentChat?.token) return;
+    try {
+      const response = await fetch(memoizedEndpoints.getChatMessages(currentChat.token), {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      const data = await response.json();
+      setMessages(data.messages || []);
+    } catch (err) {
+      console.error('Error refreshing chat:', err);
+    }
+  }, [currentChat, token, memoizedEndpoints]);
 
-},[currentChat])
-  // Start a new chat
-  const startNewChat = async (reason) => {
+  // Start new chat with useCallback
+  const startNewChat = useCallback(async (reason) => {
     try {
       setLoading(true);
-      const response = await fetch(API_ENDPOINTS.startChat, {
+      const response = await fetch(memoizedEndpoints.startChat, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -137,25 +170,26 @@ useEffect(()=>{setInterval(()=>{loadChat(currentChat)},8000);
       const data = await response.json();
       console.log(data)
     
- const initialMessage = {
-      _id: data.initialMessage._id || Date.now().toString(),
-      text: data.initialMessage.text,
-      sender: 'support',
-      timestamp: new Date().toISOString(),
-      status: 'delivered'
-    };
-        const newChat = {
-      token: data.token,
-      serviceType: reason,
-      status: 'active',
-      lastMessage: initialMessage,
-      unreadCount: 0,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
+      const initialMessage = {
+        _id: data.initialMessage._id || Date.now().toString(),
+        text: data.initialMessage.text,
+        sender: 'support',
+        timestamp: new Date().toISOString(),
+        status: 'delivered'
+      };
+      
+      const newChat = {
+        token: data.token,
+        serviceType: reason,
+        status: 'active',
+        lastMessage: initialMessage,
+        unreadCount: 0,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
 
-    setChats(prev => [...prev, newChat]);
-    setActiveView('chat');
+      setChats(prev => [...prev, newChat]);
+      setActiveView('chat');
       setCurrentChat({
         token: data.token,
         serviceType: reason,
@@ -163,15 +197,23 @@ useEffect(()=>{setInterval(()=>{loadChat(currentChat)},8000);
       });
       setMessages([initialMessage]);
    
+      // Start refresh interval for this new chat
+      if (refreshIntervalRef.current) {
+        clearInterval(refreshIntervalRef.current);
+      }
+      
+      refreshIntervalRef.current = setInterval(() => {
+        refreshCurrentChat();
+      }, 10000); // Refresh every 10 seconds
     } catch (error) {
       console.error('Error starting chat:', error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [token, selectedBookingForChat, memoizedEndpoints, refreshCurrentChat]);
 
-  // Send a new message
-  const sendMessage = async () => {
+  // Send message with useCallback
+  const sendMessage = useCallback(async () => {
     if (!newMessage.trim() || !currentChat) return;
 
     try {
@@ -189,7 +231,7 @@ useEffect(()=>{setInterval(()=>{loadChat(currentChat)},8000);
       setNewMessage('');
       setMessageStatus(prev => ({ ...prev, [tempId]: 'sending' }));
       
-      const response = await fetch(API_ENDPOINTS.sendMessage, {
+      const response = await fetch(memoizedEndpoints.sendMessage, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -237,9 +279,10 @@ useEffect(()=>{setInterval(()=>{loadChat(currentChat)},8000);
         msg._id === tempId ? { ...msg, status: 'failed' } : msg
       ));
     }
-  };
+  }, [newMessage, currentChat, token, memoizedEndpoints]);
 
-  const getStatusColor = (status) => {
+  // Memoized status color getter
+  const getStatusColor = useCallback((status) => {
     switch (status.toLowerCase()) {
       case 'cancelled': return '#ff6b6b';
       case 'completed': return '#51cf66';
@@ -247,19 +290,47 @@ useEffect(()=>{setInterval(()=>{loadChat(currentChat)},8000);
       case 'active': return '#fcc419';
       default: return '#adb5bd';
     }
-  };
+  }, []);
 
-  const onRefresh = () => {
+  // Memoized service icon getter
+  const getServiceIcon = useCallback((serviceType) => {
+    switch (serviceType) {
+      case 'payment': return 'payment';
+      case 'cancellation': return 'cancel';
+      case 'reschedule': return 'schedule';
+      case 'feedback': return 'feedback';
+      case 'technical': return 'build';
+      default: return 'support';
+    }
+  }, []);
+
+  // Refresh control handler
+  const onRefresh = useCallback(() => {
     setRefreshing(true);
     if (activeView === 'bookings') {
       fetchBookings();
     } else if (activeView === 'chats') {
       fetchChats();
     }
-  };
+  }, [activeView, fetchBookings, fetchChats]);
 
-  // Render a booking item
-  const renderBookingItem = ({ item }) => (
+  // Clean up interval on unmount
+  useEffect(() => {
+    return () => {
+      if (refreshIntervalRef.current) {
+        clearInterval(refreshIntervalRef.current);
+      }
+    };
+  }, []);
+
+  // Initial data loading
+  useEffect(() => {
+    fetchBookings();
+    fetchChats();
+  }, [fetchBookings, fetchChats]);
+
+  // Memoized booking item renderer
+  const renderBookingItem = useCallback(({ item }) => (
     <TouchableOpacity 
       style={styles.bookingItem}
       onPress={() => {
@@ -285,10 +356,10 @@ useEffect(()=>{setInterval(()=>{loadChat(currentChat)},8000);
         <Text style={styles.createdAtText}>Created: {item.createdAt}</Text>
       </View>
     </TouchableOpacity>
-  );
+  ), [getStatusColor]);
 
-  // Render a chat list item
-  const renderChatItem = ({ item }) => {
+  // Memoized chat item renderer
+  const renderChatItem = useCallback(({ item }) => {
     const lastMessageTime = item.lastMessage?.timestamp 
       ? moment(item.lastMessage.timestamp).format('h:mm A')
       : '';
@@ -324,21 +395,10 @@ useEffect(()=>{setInterval(()=>{loadChat(currentChat)},8000);
         </View>
       </TouchableOpacity>
     );
-  };
+  }, [getServiceIcon, loadChat]);
 
-  const getServiceIcon = (serviceType) => {
-    switch (serviceType) {
-      case 'payment': return 'payment';
-      case 'cancellation': return 'cancel';
-      case 'reschedule': return 'schedule';
-      case 'feedback': return 'feedback';
-      case 'technical': return 'build';
-      default: return 'support';
-    }
-  };
-
-  // Render a message in chat view
-  const renderMessage = ({ item }) => {
+  // Memoized message renderer
+  const renderMessage = useCallback(({ item }) => {
     const isMe = item.sender === 'user';
     const isSupport = item.sender === 'support';
     const status = messageStatus[item._id] || item.status;
@@ -385,9 +445,10 @@ useEffect(()=>{setInterval(()=>{loadChat(currentChat)},8000);
         </View>
       </View>
     );
-  };
+  }, [messageStatus]);
 
-  const renderActionButton = (title, onPress, color = '#339af0') => (
+  // Memoized action button renderer
+  const renderActionButton = useCallback((title, onPress, color = '#339af0') => (
     <TouchableOpacity 
       style={[styles.actionButton, { backgroundColor: color }]}
       onPress={onPress}
@@ -395,9 +456,10 @@ useEffect(()=>{setInterval(()=>{loadChat(currentChat)},8000);
       <Text style={styles.actionButtonText}>{title}</Text>
       <Icon name="chevron-right" size={20} color="#fff" />
     </TouchableOpacity>
-  );
+  ), []);
 
-  const renderBookingOptions = () => {
+  // Memoized booking options
+  const renderBookingOptions = useCallback(() => {
     if (!selectedBookingForChat) return null;
     
     const commonOptions = [
@@ -439,13 +501,7 @@ useEffect(()=>{setInterval(()=>{loadChat(currentChat)},8000);
       ] : [];
     
     return [...commonOptions, ...statusSpecificOptions];
-  };
-
-  // Initial data loading
-  useEffect(() => {
-    fetchBookings();
-    fetchChats();
-  }, []);
+  }, [selectedBookingForChat, startNewChat]);
 
   // Chat view
   if (activeView === 'chat') {
@@ -457,7 +513,13 @@ useEffect(()=>{setInterval(()=>{loadChat(currentChat)},8000);
           keyboardVerticalOffset={90}
         >
           <View style={styles.chatHeader}>
-            <TouchableOpacity onPress={() => setActiveView(chats.length > 0 ? 'chats' : 'bookings')}>
+            <TouchableOpacity onPress={() => {
+              if (refreshIntervalRef.current) {
+                clearInterval(refreshIntervalRef.current);
+                refreshIntervalRef.current = null;
+              }
+              setActiveView(chats.length > 0 ? 'chats' : 'bookings');
+            }}>
               <Icon name="arrow-back" size={24} color="#333" />
             </TouchableOpacity>
             <Text style={styles.chatTitle}>
@@ -550,7 +612,7 @@ useEffect(()=>{setInterval(()=>{loadChat(currentChat)},8000);
           <TouchableOpacity onPress={() => setActiveView('bookings')}>
             <Icon name="arrow-back" size={24} color="#333" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Messages</Text>
+          <Text style={styles.headerTitle}>Active Support</Text>
           <TouchableOpacity onPress={fetchChats}>
             <Icon name="refresh" size={24} color="#333" />
           </TouchableOpacity>
@@ -592,7 +654,7 @@ useEffect(()=>{setInterval(()=>{loadChat(currentChat)},8000);
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Your Bookings</Text>
+        <Text style={styles.headerTitle}>Choose Bookings For Support</Text>
         <View style={styles.headerRight}>
           <TouchableOpacity onPress={fetchBookings} style={styles.refreshButton}>
             <Icon name="refresh" size={24} color="#333" />
@@ -636,6 +698,8 @@ useEffect(()=>{setInterval(()=>{loadChat(currentChat)},8000);
     </SafeAreaView>
   );
 };
+
+
 
 const styles = StyleSheet.create({
   container: {
