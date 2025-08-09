@@ -228,6 +228,7 @@ const [googleerror,setgoogleerror]=useState("")
       dispatch(login({
         token: res.data.token,
         userInfo: {
+          id:res.data.user.id,
           name: res.data.user?.name || null,
           email: res.data.user?.email || null,
           phoneNumber: res.data.user?.phoneNumber || null,

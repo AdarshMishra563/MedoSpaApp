@@ -34,6 +34,7 @@ import NotificationPopup from './pages/NotificationPopup';
 import NotificationScreen from './pages/NotificationPage';
 import FeedbackScreen from './pages/FeedbackScreen';
 import AdminBookingsScreen from './pages/Adminscreen';
+import Support from './pages/Support';
 
 
 const Stack = createNativeStackNavigator();
@@ -201,6 +202,7 @@ const isAdmin = useSelector(state => state?.user?.userInfo?.admin);
 <Stack.Screen name='NotificationPage' component={NotificationScreen}/>
 <Stack.Screen name='FeedbackScreen' component={FeedbackScreen}/>
       <Stack.Screen name='AdminPage' component={AdminBookingsScreen}/>
+      <Stack.Screen name='Support' component={Support}/>
     </Stack.Navigator></NavigationContainer></MenuProvider>
   )
 }

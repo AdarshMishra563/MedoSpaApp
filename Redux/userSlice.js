@@ -6,6 +6,7 @@ const userSlice = createSlice({
     isLoggedIn: false,
     userToken: null,
     userInfo: {
+      id:null,
       name: null,
       phoneNumber: null,
       email: null,
@@ -35,6 +36,7 @@ const userSlice = createSlice({
       state.userToken = null;
       state.userInfo = {
         name: null,
+        id:null,
         phoneNumber: null,
         email: null,
         picture: null

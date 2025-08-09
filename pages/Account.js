@@ -113,7 +113,7 @@ setAddress(parsedLoc)
 }
 location();
 },[])
-const button=['Doctors','Saved','Help']
+const button=['Doctors','Saved','Support']
 const icons = ['person','bookmark', 'help-outline', ]
   if (loading || !data) {
     return (
