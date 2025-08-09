@@ -17,7 +17,7 @@ import { useSelector } from 'react-redux';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import moment from 'moment';
 
-const API_BASE_URL = 'http://192.168.33.118:5000';
+const API_BASE_URL = 'https://medospabackend.onrender.com';
 
 const API_ENDPOINTS = {
   startChat: `${API_BASE_URL}/chat/start`,
