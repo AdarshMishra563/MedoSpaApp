@@ -10,12 +10,13 @@ import {
   Platform,
   ActivityIndicator,
   Image,
-  SafeAreaView,
+  
   RefreshControl
 } from 'react-native';
 import { useSelector } from 'react-redux';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import moment from 'moment';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const API_BASE_URL = 'https://medospabackend.onrender.com';
 
