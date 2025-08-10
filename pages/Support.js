@@ -21,7 +21,7 @@ const API_BASE_URL = 'https://medospabackend.onrender.com';
 
 const API_ENDPOINTS = {
   startChat: `${API_BASE_URL}/chat/start`,
-  getChatMessages: (token) => `${API_BASE_URL}/chat/${token}`,
+  getChatMessages: (token) => `${API_BASE_URL}/chat/${token}?markRead=true`,
   sendMessage: `${API_BASE_URL}/chat/send`,
   getUserChats: `${API_BASE_URL}/chat/user/chats`,
   getBookings: `${API_BASE_URL}/data/book`

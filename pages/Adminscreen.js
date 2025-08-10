@@ -1,9 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, RefreshControl, Linking } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, RefreshControl, Linking, Pressable } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import axios from 'axios';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { getAndSendFcmToken } from './getAndsendfcmToken';
+import messaging from '@react-native-firebase/messaging';
+
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import { clearUserInfo,logout } from '../Redux/userSlice';
+
 
 const API_URL = 'https://medospabackend.onrender.com/api';
 
@@ -260,8 +266,9 @@ const BookingsList = ({ statusFilter }) => {
   );
 };
 
-const AdminBookingsScreen = () => {
+const AdminBookingsScreen = ({ navigation }) => {
   const [activeTab, setActiveTab] = useState('active');
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const tabs = [
     { label: 'New Bookings', value: 'active' },
     { label: 'Confirmed', value: 'confirmed' },
@@ -269,22 +276,87 @@ const AdminBookingsScreen = () => {
     { label: 'Ongoing', value: 'ongoing' },
     { label: 'Completed', value: 'completed' },
   ];
+  const token = useSelector(state => state.user.userToken);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    if(token) {
+      getAndSendFcmToken(token);
+    }
+  }, [token]);
+
+  const handleLogout = async () => {
+    setShowLogoutModal(false);
+    dispatch(clearUserInfo());
+    dispatch(logout());
+    try {
+       messaging().deleteToken();
+    } catch (e) {
+      console.log('Error deleting FCM token:', e);
+    }
+    navigation.navigate("Login");
+  };
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <View style={styles.tabBar}>
-        {tabs.map(tab => (
-          <TouchableOpacity
-            key={tab.value}
-            style={[styles.tabButton, activeTab === tab.value && styles.activeTab]}
-            onPress={() => setActiveTab(tab.value)}
-          >
-            <Text style={activeTab === tab.value ? styles.activeTabText : styles.tabText}>{tab.label}</Text>
-          </TouchableOpacity>
-        ))}
+    <View style={{ flex: 1 }}>
+      <SafeAreaView style={{ flex: 1 }}>
+        <View style={styles.tabBar}>
+          {tabs.map(tab => (
+            <TouchableOpacity
+              key={tab.value}
+              style={[styles.tabButton, activeTab === tab.value && styles.activeTab]}
+              onPress={() => setActiveTab(tab.value)}
+            >
+              <Text style={activeTab === tab.value ? styles.activeTabText : styles.tabText}>{tab.label}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+        <BookingsList statusFilter={activeTab} />
+        
+        {/* Floating menu button */}
+        <TouchableOpacity 
+          style={styles.menuButton}
+          onPress={() => setShowLogoutModal(true)}
+        >
+          <Icon name="more-vert" size={24} color="#fff" />
+        </TouchableOpacity>
+      </SafeAreaView>
+
+
+      <Modal
+        visible={showLogoutModal}
+        onLogout={handleLogout}
+        onCancel={() => setShowLogoutModal(false)}
+
+      >
+     
+      </Modal>
+    </View>
+  );
+};
+const Modal = ({ visible, onLogout, onCancel }) => {
+  if (!visible) return null;
+
+  return (
+    <View style={styles.absoluteModalOverlay}>
+      <View style={styles.absoluteModalContent}>
+        <Pressable 
+          style={styles.absoluteModalButton} 
+          onPress={onLogout}
+          android_ripple={{ color: '#f0f0f0' }}
+        >
+          <Text style={styles.absoluteModalLogoutText}>Logout</Text>
+        </Pressable>
+        <View style={styles.absoluteModalDivider} />
+        <Pressable 
+          style={styles.absoluteModalButton}
+          onPress={onCancel}
+          android_ripple={{ color: '#f0f0f0' }}
+        >
+          <Text style={styles.absoluteModalCancelText}>Cancel</Text>
+        </Pressable>
       </View>
-      <BookingsList statusFilter={activeTab} />
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -304,6 +376,58 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 4
+  },absoluteModalOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+  },
+  absoluteModalContent: {
+    width: '70%',
+    backgroundColor: 'white',
+    borderRadius: 10,
+    overflow: 'hidden',
+    elevation: 5,
+  },
+  absoluteModalButton: {
+    padding: 16,
+    alignItems: 'center',
+  },
+  absoluteModalLogoutText: {
+    color: 'red',
+    fontSize: 18,
+    fontWeight: '500',
+  },
+  absoluteModalCancelText: {
+    color: '#007bff',
+    fontSize: 18,
+    fontWeight: '500',
+  },
+  absoluteModalDivider: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: '#ccc',
+  },
+  container: {
+    flex: 1,
+    position: 'relative', // Important for absolute positioning children
+  },
+  menuButton: {
+    position: 'absolute',
+    bottom: 30,
+    right: 20,
+    backgroundColor: '#007bff',
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 5,
+    zIndex: 100, // Lower than modal but higher than other content
   },
   dateControls: {
     flexDirection: 'row',
@@ -380,7 +504,49 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 50
-  }
+  },
+  menuButton: {
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
+    backgroundColor: '#007bff',
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 5,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 10,
+    width: '80%',overflow: 'hidden',
+  },
+  logoutButton: {
+    padding: 15,
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  logoutText: {
+    color: 'red',
+    fontSize: 18,
+  },
+  cancelButtonModal: {
+    padding: 15,
+    alignItems: 'center',
+  },
+  cancelTextModal: {
+    color: '#007bff',
+    fontSize: 18,
+  },
 });
 
 export default AdminBookingsScreen;
